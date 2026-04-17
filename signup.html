@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Smart CPU Scheduler | Sign Up</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at 30% 10%, #0A0F1A, #020408);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #EFF3FC;
+            padding: 1.5rem;
+        }
+
+        .signup-container {
+            max-width: 520px;
+            width: 100%;
+            background: rgba(12, 20, 32, 0.75);
+            backdrop-filter: blur(16px);
+            border-radius: 2rem;
+            border: 1px solid rgba(92, 124, 255, 0.3);
+            padding: 2.2rem 2rem 2.5rem;
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.5), 0 0 0 0.5px rgba(92, 124, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        /* Centered Logo Styles */
+        .centered-logo {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        .centered-logo:hover {
+            transform: scale(1.02);
+        }
+        .centered-logo i {
+            font-size: 2.5rem;
+            background: linear-gradient(145deg, #8AABFF, #4A6EFF);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .centered-logo h2 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-top: 0.3rem;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #FFFFFF, #B9D0FF);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .welcome-text {
+            text-align: center;
+            margin-bottom: 1.8rem;
+        }
+        .welcome-text h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #FFFFFF, #A0C0FF);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .welcome-text p {
+            color: #A7BBE0;
+            font-size: 0.85rem;
+            margin-top: 0.3rem;
+        }
+
+        .input-group {
+            margin-bottom: 1.2rem;
+        }
+        .input-group label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-bottom: 0.4rem;
+            color: #BDD4FF;
+            letter-spacing: 0.3px;
+        }
+        .input-field {
+            width: 100%;
+            background: #0E1625;
+            border: 1px solid #2A3650;
+            border-radius: 1rem;
+            padding: 0.8rem 1rem;
+            font-size: 0.9rem;
+            color: white;
+            font-family: 'Inter', monospace;
+            transition: 0.2s;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: #5E7EFF;
+            box-shadow: 0 0 0 3px rgba(94, 126, 255, 0.2);
+        }
+        .input-field.error-input {
+            border-color: #FF6B6B;
+        }
+
+        .name-row {
+            display: flex;
+            gap: 1rem;
+        }
+        .name-row .input-group {
+            flex: 1;
+        }
+
+        .btn-signup {
+            width: 100%;
+            background: linear-gradient(95deg, #5C7CFF, #3F5FDF);
+            border: none;
+            padding: 0.9rem;
+            border-radius: 2rem;
+            font-weight: 700;
+            font-size: 1rem;
+            color: white;
+            cursor: pointer;
+            margin-top: 0.8rem;
+            transition: 0.2s;
+            box-shadow: 0 6px 14px rgba(60, 90, 220, 0.3);
+        }
+        .btn-signup:hover {
+            transform: scale(0.98);
+            background: linear-gradient(95deg, #6D8CFF, #4E6EFF);
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 1.5rem;
+            font-size: 0.85rem;
+            color: #9EB0DA;
+        }
+        .login-link a {
+            color: #7D9EFF;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+        .error-msg {
+            color: #FF928B;
+            font-size: 0.7rem;
+            margin-top: 0.3rem;
+            display: block;
+        }
+        .success-msg {
+            color: #6BFF9E;
+            font-size: 0.75rem;
+            margin-top: 0.5rem;
+            text-align: center;
+        }
+        .info-note {
+            font-size: 0.65rem;
+            text-align: center;
+            margin-top: 1rem;
+            background: #0F1829;
+            padding: 0.5rem;
+            border-radius: 40px;
+            color: #8FA3D9;
+        }
+        .password-strength {
+            font-size: 0.65rem;
+            margin-top: 0.3rem;
+        }
+        .strength-weak { color: #FF928B; }
+        .strength-medium { color: #FFD966; }
+        .strength-strong { color: #6BFF9E; }
+    </style>
+</head>
+<body>
+<div class="signup-container">
+    <!-- Centered Clickable Logo -->
+    <div class="centered-logo" onclick="window.location.href='index.html'">
+        <i class="fas fa-microchip"></i>
+        <h2>SmartCPU</h2>
+    </div>
+
+    <div class="welcome-text">
+        <h3>Create Account</h3>
+        <p>Sign up with your Gmail to start simulating</p>
+    </div>
+
+    <form id="signupForm">
+        <div class="name-row">
+            <div class="input-group">
+                <label><i class="fas fa-user"></i> First Name</label>
+                <input type="text" id="firstName" class="input-field" placeholder="First Name" autocomplete="given-name">
+            </div>
+            <div class="input-group">
+                <label><i class="fas fa-user"></i> Last Name</label>
+                <input type="text" id="lastName" class="input-field" placeholder="Last Name" autocomplete="family-name">
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label><i class="fab fa-google"></i> Email Address (Gmail only)</label>
+            <input type="email" id="email" class="input-field" placeholder="yourname@gmail.com" autocomplete="email">
+        </div>
+
+        <div class="input-group">
+            <label><i class="fas fa-lock"></i> Password</label>
+            <input type="password" id="password" class="input-field" placeholder="Min 6 characters">
+            <div id="passwordStrength" class="password-strength"></div>
+        </div>
+
+        <div class="input-group">
+            <label><i class="fas fa-check-circle"></i> Retype Password</label>
+            <input type="password" id="confirmPassword" class="input-field" placeholder="Confirm your password">
+        </div>
+
+        <button type="button" class="btn-signup" id="signupBtn"><i class="fas fa-user-plus"></i> Sign Up</button>
+    </form>
+
+    <div class="login-link">
+        Already have an account? <a href="login.html">Login</a>
+    </div>
+    <div class="info-note">
+        <i class="fas fa-database"></i> Only @gmail.com addresses • Your data is stored locally
+    </div>
+    <div id="formMessage" style="margin-top: 0.8rem;"></div>
+</div>
+
+<script>
+    // ============================================================
+    // DATABASE (localStorage) - Stores ONLY users who sign up
+    // ============================================================
+    const USERS_STORAGE_KEY = 'cpu_sim_users_db';
+    
+    function getUsersDB() {
+        const stored = localStorage.getItem(USERS_STORAGE_KEY);
+        if (stored) {
+            return JSON.parse(stored);
+        }
+        return {};
+    }
+    
+    function saveUsersDB(usersDB) {
+        localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(usersDB));
+    }
+    
+    // Check if user exists
+    function userExists(email) {
+        const usersDB = getUsersDB();
+        return !!usersDB[email.toLowerCase()];
+    }
+    
+    // Register new user
+    function registerUser(email, password, firstName, lastName) {
+        const usersDB = getUsersDB();
+        const normalizedEmail = email.toLowerCase();
+        
+        if (usersDB[normalizedEmail]) {
+            return { success: false, message: "This email is already registered. Please login instead." };
+        }
+        
+        const fullName = `${firstName} ${lastName}`.trim();
+        
+        usersDB[normalizedEmail] = {
+            email: normalizedEmail,
+            password: password,
+            name: fullName,
+            firstName: firstName,
+            lastName: lastName,
+            createdAt: new Date().toISOString(),
+            lastLogin: null
+        };
+        
+        saveUsersDB(usersDB);
+        return { success: true, message: "Account created successfully!", user: usersDB[normalizedEmail] };
+    }
+    
+    // Password strength checker
+    function checkPasswordStrength(password) {
+        if (!password) return { score: 0, text: "" };
+        
+        let score = 0;
+        if (password.length >= 6) score++;
+        if (password.length >= 8) score++;
+        if (/[A-Z]/.test(password)) score++;
+        if (/[0-9]/.test(password)) score++;
+        if (/[^A-Za-z0-9]/.test(password)) score++;
+        
+        if (score <= 2) return { score: score, text: "Weak", class: "strength-weak" };
+        if (score <= 4) return { score: score, text: "Medium", class: "strength-medium" };
+        return { score: score, text: "Strong", class: "strength-strong" };
+    }
+    
+    // Real-time password strength display
+    const passwordInput = document.getElementById('password');
+    const strengthDiv = document.getElementById('passwordStrength');
+    
+    passwordInput.addEventListener('input', function() {
+        const strength = checkPasswordStrength(this.value);
+        if (this.value.length === 0) {
+            strengthDiv.innerHTML = '';
+        } else {
+            strengthDiv.innerHTML = `<span class="${strength.class}">🔐 Password strength: ${strength.text}</span>`;
+        }
+    });
+    
+    // Validate email (must be Gmail)
+    function isValidGmail(email) {
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+        return emailRegex.test(email);
+    }
+    
+    // Main signup handler
+    document.getElementById('signupBtn').addEventListener('click', function() {
+        const firstName = document.getElementById('firstName').value.trim();
+        const lastName = document.getElementById('lastName').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+        const messageDiv = document.getElementById('formMessage');
+        
+        // Clear previous messages
+        messageDiv.innerHTML = '';
+        
+        // Remove error styles
+        document.querySelectorAll('.input-field').forEach(field => {
+            field.classList.remove('error-input');
+        });
+        
+        // Validation
+        let hasError = false;
+        let errorMessage = '';
+        
+        if (!firstName) {
+            errorMessage = 'First name is required';
+            document.getElementById('firstName').classList.add('error-input');
+            hasError = true;
+        } else if (!lastName) {
+            errorMessage = 'Last name is required';
+            document.getElementById('lastName').classList.add('error-input');
+            hasError = true;
+        } else if (!email) {
+            errorMessage = 'Email address is required';
+            document.getElementById('email').classList.add('error-input');
+            hasError = true;
+        } else if (!isValidGmail(email)) {
+            errorMessage = 'Please use a valid @gmail.com address';
+            document.getElementById('email').classList.add('error-input');
+            hasError = true;
+        } else if (!password) {
+            errorMessage = 'Password is required';
+            document.getElementById('password').classList.add('error-input');
+            hasError = true;
+        } else if (password.length < 6) {
+            errorMessage = 'Password must be at least 6 characters';
+            document.getElementById('password').classList.add('error-input');
+            hasError = true;
+        } else if (password !== confirmPassword) {
+            errorMessage = 'Passwords do not match';
+            document.getElementById('confirmPassword').classList.add('error-input');
+            document.getElementById('password').classList.add('error-input');
+            hasError = true;
+        }
+        
+        if (hasError) {
+            messageDiv.innerHTML = `<div class="error-msg" style="text-align:center;">❌ ${errorMessage}</div>`;
+            return;
+        }
+        
+        // Check if user already exists
+        if (userExists(email)) {
+            messageDiv.innerHTML = `<div class="error-msg" style="text-align:center;">❌ This email is already registered. <a href="login.html" style="color:#7D9EFF;">Login instead</a></div>`;
+            return;
+        }
+        
+        // Register the user
+        const result = registerUser(email, password, firstName, lastName);
+        
+        if (result.success) {
+            // Show success message
+            messageDiv.innerHTML = `<div class="success-msg">✅ ${result.message} Redirecting to login...</div>`;
+            
+            // Auto redirect to login page after 2 seconds
+            setTimeout(() => {
+                window.location.href = 'login.html';
+            }, 2000);
+        } else {
+            messageDiv.innerHTML = `<div class="error-msg" style="text-align:center;">❌ ${result.message}</div>`;
+        }
+    });
+    
+    // Enter key support
+    function handleEnter(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            document.getElementById('signupBtn').click();
+        }
+    }
+    document.addEventListener('keypress', handleEnter);
+    
+    // Real-time password match indicator
+    const confirmInput = document.getElementById('confirmPassword');
+    confirmInput.addEventListener('input', function() {
+        const password = document.getElementById('password').value;
+        if (this.value.length > 0 && password !== this.value) {
+            this.style.borderColor = '#FF6B6B';
+        } else if (this.value.length > 0 && password === this.value) {
+            this.style.borderColor = '#6BFF9E';
+        } else {
+            this.style.borderColor = '#2A3650';
+        }
+    });
+    
+    passwordInput.addEventListener('input', function() {
+        const confirm = document.getElementById('confirmPassword').value;
+        if (confirm.length > 0 && this.value !== confirm) {
+            confirmInput.style.borderColor = '#FF6B6B';
+        } else if (confirm.length > 0 && this.value === confirm) {
+            confirmInput.style.borderColor = '#6BFF9E';
+        } else {
+            confirmInput.style.borderColor = '#2A3650';
+        }
+    });
+</script>
+</body>
+</html>

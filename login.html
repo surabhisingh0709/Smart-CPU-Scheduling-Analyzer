@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Smart CPU Scheduler | Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at 30% 10%, #0A0F1A, #020408);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #EFF3FC;
+            padding: 1.5rem;
+        }
+
+        .login-container {
+            max-width: 480px;
+            width: 100%;
+            background: rgba(12, 20, 32, 0.75);
+            backdrop-filter: blur(16px);
+            border-radius: 2rem;
+            border: 1px solid rgba(92, 124, 255, 0.3);
+            padding: 2.2rem 2rem 2.5rem;
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.5), 0 0 0 0.5px rgba(92, 124, 255, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        /* Centered Logo Styles */
+        .centered-logo {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        .centered-logo:hover {
+            transform: scale(1.02);
+        }
+        .centered-logo i {
+            font-size: 2.5rem;
+            background: linear-gradient(145deg, #8AABFF, #4A6EFF);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .centered-logo h2 {
+            font-size: 1.6rem;
+            font-weight: 600;
+            margin-top: 0.3rem;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #FFFFFF, #B9D0FF);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .welcome-text {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .welcome-text h3 {
+            font-size: 1.7rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #FFFFFF, #A0C0FF);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .welcome-text p {
+            color: #A7BBE0;
+            font-size: 0.9rem;
+            margin-top: 0.3rem;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+        .input-group label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: #BDD4FF;
+            letter-spacing: 0.3px;
+        }
+        .input-field {
+            width: 100%;
+            background: #0E1625;
+            border: 1px solid #2A3650;
+            border-radius: 1.2rem;
+            padding: 0.9rem 1.2rem;
+            font-size: 0.95rem;
+            color: white;
+            font-family: 'Inter', monospace;
+            transition: 0.2s;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: #5E7EFF;
+            box-shadow: 0 0 0 3px rgba(94, 126, 255, 0.2);
+        }
+        .input-field.error-input {
+            border-color: #FF6B6B;
+        }
+
+        .otp-section {
+            display: none;
+            animation: fadeSlide 0.3s ease;
+        }
+        @keyframes fadeSlide {
+            from { opacity: 0; transform: translateY(8px);}
+            to { opacity: 1; transform: translateY(0);}
+        }
+
+        .btn-login {
+            width: 100%;
+            background: linear-gradient(95deg, #5C7CFF, #3F5FDF);
+            border: none;
+            padding: 0.9rem;
+            border-radius: 2rem;
+            font-weight: 700;
+            font-size: 1rem;
+            color: white;
+            cursor: pointer;
+            margin-top: 0.5rem;
+            transition: 0.2s;
+            box-shadow: 0 6px 14px rgba(60, 90, 220, 0.3);
+        }
+        .btn-login:hover {
+            transform: scale(0.98);
+            background: linear-gradient(95deg, #6D8CFF, #4E6EFF);
+        }
+
+        .secondary-btn {
+            background: transparent;
+            border: 1px solid #5E7EFF;
+            color: #B7CEFF;
+            margin-top: 0.8rem;
+            box-shadow: none;
+        }
+        .secondary-btn:hover {
+            background: #1F2A44;
+            color: white;
+        }
+
+        .signup-link {
+            text-align: center;
+            margin-top: 1.8rem;
+            font-size: 0.85rem;
+            color: #9EB0DA;
+        }
+        .signup-link a {
+            color: #7D9EFF;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .signup-link a:hover {
+            text-decoration: underline;
+        }
+        .error-msg {
+            color: #FF928B;
+            font-size: 0.75rem;
+            margin-top: 0.5rem;
+            display: block;
+            text-align: center;
+        }
+        .success-msg {
+            color: #6BFF9E;
+            font-size: 0.75rem;
+            margin-top: 0.5rem;
+            text-align: center;
+        }
+        .info-note {
+            font-size: 0.7rem;
+            text-align: center;
+            margin-top: 1rem;
+            background: #0F1829;
+            padding: 0.5rem;
+            border-radius: 40px;
+            color: #8FA3D9;
+        }
+        .resend-otp {
+            text-align: center;
+            margin-top: 0.8rem;
+        }
+        .resend-otp button {
+            background: none;
+            border: none;
+            color: #7D9EFF;
+            cursor: pointer;
+            font-size: 0.75rem;
+            text-decoration: underline;
+        }
+        .resend-otp button:hover {
+            color: #A0C0FF;
+        }
+    </style>
+</head>
+<body>
+<div class="login-container" id="loginContainer">
+    <!-- Centered Clickable Logo -->
+    <div class="centered-logo" onclick="window.location.href='index.html'">
+        <i class="fas fa-microchip"></i>
+        <h2>SmartCPU</h2>
+    </div>
+
+    <div class="welcome-text">
+        <h3>LOGIN</h3>
+        <p>Enter your credentials to access the simulator</p>
+    </div>
+
+    <!-- LOGIN STEP 1: email + password -->
+    <div id="stepEmailPassword">
+        <div class="input-group">
+            <label><i class="fab fa-google"></i> Gmail Address</label>
+            <input type="email" id="loginEmail" class="input-field" placeholder="yourname@gmail.com" autocomplete="email">
+        </div>
+        <div class="input-group">
+            <label><i class="fas fa-lock"></i> Password</label>
+            <input type="password" id="loginPassword" class="input-field" placeholder="Enter your password">
+        </div>
+        <button class="btn-login" id="sendOtpBtn"><i class="fas fa-paper-plane"></i> Send OTP</button>
+        <div class="signup-link">
+            Don't have an account? <a href="signup.html">Sign up</a>
+        </div>
+        <div id="loginError" class="error-msg"></div>
+        <div class="info-note">
+            <i class="fas fa-database"></i> Only accounts created via Sign Up can login
+        </div>
+    </div>
+
+    <!-- STEP 2: OTP verification -->
+    <div id="stepOtp" style="display: none;">
+        <div class="input-group">
+            <label><i class="fas fa-key"></i> One-Time Password (OTP)</label>
+            <input type="text" id="otpInput" class="input-field" placeholder="Enter 6-digit code" maxlength="6">
+        </div>
+        <button class="btn-login" id="verifyOtpBtn"><i class="fas fa-check-circle"></i> Verify & Login</button>
+        <button class="btn-login secondary-btn" id="backToLoginBtn"><i class="fas fa-arrow-left"></i> Back</button>
+        <div id="otpError" class="error-msg"></div>
+        <div class="resend-otp">
+            <button id="resendOtpBtn"><i class="fas fa-redo-alt"></i> Resend OTP</button>
+        </div>
+        <div class="info-note">
+            <i class="fas fa-info-circle"></i> Dynamic OTP sent to your email (check alert)
+        </div>
+    </div>
+</div>
+
+<script>
+    // ============================================================
+    // DATABASE (localStorage) - Same as signup page
+    // ONLY users who signed up exist here
+    // ============================================================
+    const USERS_STORAGE_KEY = 'cpu_sim_users_db';
+    
+    function getUsersDB() {
+        const stored = localStorage.getItem(USERS_STORAGE_KEY);
+        if (stored) {
+            return JSON.parse(stored);
+        }
+        return {};
+    }
+    
+    // Validate user credentials against signup database
+    function validateUserCredentials(email, password) {
+        const usersDB = getUsersDB();
+        const normalizedEmail = email.toLowerCase();
+        
+        // Check if user exists in database (must have signed up)
+        if (!usersDB[normalizedEmail]) {
+            return { success: false, message: "Account not found. Please sign up first." };
+        }
+        
+        // Verify password
+        if (usersDB[normalizedEmail].password !== password) {
+            return { success: false, message: "Incorrect password. Please try again." };
+        }
+        
+        return { success: true, user: usersDB[normalizedEmail] };
+    }
+    
+    // Generate random 6-digit OTP (dynamic, not fixed)
+    function generateOTP() {
+        return Math.floor(100000 + Math.random() * 900000).toString();
+    }
+    
+    // Simulate sending OTP to email
+    function sendOtpToEmail(email, otp, userName) {
+        console.log(`[SIMULATED] OTP for ${email}: ${otp}`);
+        // Show alert with OTP (simulating email)
+        alert(`📧 OTP sent to ${email}\n\nHello ${userName || email.split('@')[0]},\n\nYour verification code is: ${otp}\n\nThis OTP expires in 5 minutes.`);
+        return true;
+    }
+    
+    // OTP storage with expiry (5 minutes)
+    let otpStore = {}; // { email: { code: "123456", expiry: timestamp } }
+    
+    function storeOTP(email, otp) {
+        otpStore[email.toLowerCase()] = {
+            code: otp,
+            expiry: Date.now() + 5 * 60 * 1000 // 5 minutes expiry
+        };
+    }
+    
+    function verifyOTP(email, enteredOtp) {
+        const normalizedEmail = email.toLowerCase();
+        const storedData = otpStore[normalizedEmail];
+        
+        if (!storedData) {
+            return { valid: false, message: "No OTP found. Please request a new one." };
+        }
+        
+        if (Date.now() > storedData.expiry) {
+            delete otpStore[normalizedEmail];
+            return { valid: false, message: "OTP has expired. Please request a new one." };
+        }
+        
+        if (storedData.code === enteredOtp) {
+            delete otpStore[normalizedEmail];
+            return { valid: true, message: "OTP verified successfully!" };
+        }
+        
+        return { valid: false, message: "Invalid OTP. Please try again." };
+    }
+    
+    // Step 1: Validate credentials against signup DB, then send OTP
+    document.getElementById('sendOtpBtn').addEventListener('click', () => {
+        const email = document.getElementById('loginEmail').value.trim();
+        const password = document.getElementById('loginPassword').value.trim();
+        const errorSpan = document.getElementById('loginError');
+        
+        // Clear previous error
+        errorSpan.innerText = '';
+        document.getElementById('loginEmail').classList.remove('error-input');
+        document.getElementById('loginPassword').classList.remove('error-input');
+        
+        if (!email) {
+            errorSpan.innerText = "❌ Please enter your email address";
+            document.getElementById('loginEmail').classList.add('error-input');
+            return;
+        }
+        
+        if (!password) {
+            errorSpan.innerText = "❌ Please enter your password";
+            document.getElementById('loginPassword').classList.add('error-input');
+            return;
+        }
+        
+        // Must be Gmail
+        if (!email.endsWith('@gmail.com')) {
+            errorSpan.innerText = "❌ Please use a valid @gmail.com address";
+            document.getElementById('loginEmail').classList.add('error-input');
+            return;
+        }
+        
+        // Validate against database (must have signed up)
+        const authResult = validateUserCredentials(email, password);
+        
+        if (!authResult.success) {
+            errorSpan.innerText = authResult.message;
+            if (authResult.message.includes("Account not found")) {
+                document.getElementById('loginEmail').classList.add('error-input');
+            } else {
+                document.getElementById('loginPassword').classList.add('error-input');
+            }
+            return;
+        }
+        
+        // Success! Generate dynamic OTP
+        const otpCode = generateOTP();
+        storeOTP(email, otpCode);
+        sendOtpToEmail(email, otpCode, authResult.user.name);
+        
+        // Store email and user data for next step
+        sessionStorage.setItem('tempLoginEmail', email.toLowerCase());
+        sessionStorage.setItem('tempUserData', JSON.stringify(authResult.user));
+        
+        // Switch UI to OTP step
+        document.getElementById('stepEmailPassword').style.display = 'none';
+        const otpSection = document.getElementById('stepOtp');
+        otpSection.style.display = 'block';
+        document.getElementById('otpInput').value = '';
+        document.getElementById('otpError').innerText = '';
+        errorSpan.innerText = '';
+    });
+    
+    // Step 2: Verify OTP and complete login
+    document.getElementById('verifyOtpBtn').addEventListener('click', () => {
+        const tempEmail = sessionStorage.getItem('tempLoginEmail');
+        const enteredOtp = document.getElementById('otpInput').value.trim();
+        const otpErrorSpan = document.getElementById('otpError');
+        
+        if (!tempEmail) {
+            otpErrorSpan.innerText = "Session expired. Please go back and login again.";
+            return;
+        }
+        
+        if (!enteredOtp || enteredOtp.length !== 6) {
+            otpErrorSpan.innerText = "❌ Please enter a valid 6-digit OTP";
+            return;
+        }
+        
+        const verification = verifyOTP(tempEmail, enteredOtp);
+        
+        if (!verification.valid) {
+            otpErrorSpan.innerText = verification.message;
+            return;
+        }
+        
+        // OTP verified - complete login
+        const tempUserData = sessionStorage.getItem('tempUserData');
+        let userData;
+        if (tempUserData) {
+            userData = JSON.parse(tempUserData);
+        } else {
+            const usersDB = getUsersDB();
+            userData = usersDB[tempEmail];
+        }
+        
+        if (userData) {
+            // Update last login time in database
+            const usersDB = getUsersDB();
+            if (usersDB[tempEmail]) {
+                usersDB[tempEmail].lastLogin = new Date().toISOString();
+                localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(usersDB));
+            }
+            
+            // Set session
+            sessionStorage.setItem('cpu_sim_loggedIn', 'true');
+            sessionStorage.setItem('loggedUserEmail', userData.email);
+            sessionStorage.setItem('loggedUserName', userData.name);
+            
+            // Clean up temp data
+            sessionStorage.removeItem('tempLoginEmail');
+            sessionStorage.removeItem('tempUserData');
+            
+            // Show success and redirect
+            alert(`✅ Welcome back, ${userData.name}!\nRedirecting to simulator...`);
+            window.location.href = 'simulator.html';
+        } else {
+            otpErrorSpan.innerText = "User data error. Please try login again.";
+        }
+    });
+    
+    // Resend OTP
+    document.getElementById('resendOtpBtn').addEventListener('click', () => {
+        const tempEmail = sessionStorage.getItem('tempLoginEmail');
+        const otpErrorSpan = document.getElementById('otpError');
+        
+        if (!tempEmail) {
+            otpErrorSpan.innerText = "Session expired. Please go back and login again.";
+            return;
+        }
+        
+        // Get user data to get name
+        const usersDB = getUsersDB();
+        const user = usersDB[tempEmail];
+        
+        if (!user) {
+            otpErrorSpan.innerText = "User not found. Please go back and login again.";
+            return;
+        }
+        
+        // Generate new OTP
+        const newOtp = generateOTP();
+        storeOTP(tempEmail, newOtp);
+        sendOtpToEmail(tempEmail, newOtp, user.name);
+        
+        otpErrorSpan.innerHTML = '<span style="color:#6BFF9E;">✅ New OTP sent! Check your email.</span>';
+        setTimeout(() => {
+            if (otpErrorSpan.innerHTML.includes('New OTP sent')) {
+                otpErrorSpan.innerText = '';
+            }
+        }, 3000);
+        
+        document.getElementById('otpInput').value = '';
+    });
+    
+    // Back button to login step
+    document.getElementById('backToLoginBtn').addEventListener('click', () => {
+        const tempMail = sessionStorage.getItem('tempLoginEmail');
+        if (tempMail && otpStore[tempMail]) {
+            delete otpStore[tempMail];
+        }
+        sessionStorage.removeItem('tempLoginEmail');
+        sessionStorage.removeItem('tempUserData');
+        document.getElementById('stepOtp').style.display = 'none';
+        document.getElementById('stepEmailPassword').style.display = 'block';
+        document.getElementById('loginError').innerText = '';
+        document.getElementById('otpInput').value = '';
+    });
+    
+    // Enter key handler
+    function handleEnter(e) {
+        if (e.key === 'Enter') {
+            if (document.getElementById('stepEmailPassword').style.display !== 'none') {
+                document.getElementById('sendOtpBtn').click();
+            } else if (document.getElementById('stepOtp').style.display !== 'none') {
+                document.getElementById('verifyOtpBtn').click();
+            }
+        }
+    }
+    document.addEventListener('keypress', handleEnter);
+    
+    // Clear OTP store periodically (optional cleanup)
+    setInterval(() => {
+        const now = Date.now();
+        for (const email in otpStore) {
+            if (otpStore[email].expiry < now) {
+                delete otpStore[email];
+            }
+        }
+    }, 60000); // Clean up every minute
+</script>
+</body>
+</html>

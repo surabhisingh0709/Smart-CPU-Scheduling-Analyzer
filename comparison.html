@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Smart CPU Scheduler | Comparison</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at 20% 30%, #0A0F1A, #03060C);
+            color: #EFF3FC;
+            line-height: 1.5;
+            min-height: 100vh;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #10141f;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #5A7CFF;
+            border-radius: 10px;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 3rem;
+            backdrop-filter: blur(12px);
+            background: rgba(5, 10, 20, 0.75);
+            border-bottom: 1px solid rgba(72, 120, 255, 0.25);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #A0C0FF, #6C8CFF);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            cursor: pointer;
+        }
+        .logo i {
+            background: none;
+            color: #6C8CFF;
+            margin-right: 6px;
+        }
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+        .nav-links a {
+            color: #CFE3FF;
+            text-decoration: none;
+            font-weight: 500;
+            transition: 0.2s;
+            font-size: 0.95rem;
+        }
+        .nav-links a:hover, .nav-links a.active {
+            color: white;
+            text-shadow: 0 0 6px #6C8CFF;
+        }
+
+        .comparison-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Process Input Section */
+        .process-input-section {
+            background: rgba(12, 20, 32, 0.7);
+            backdrop-filter: blur(8px);
+            border-radius: 1.5rem;
+            border: 1px solid rgba(92, 124, 255, 0.2);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #A0C0FF;
+        }
+
+        .process-table-wrapper {
+            overflow-x: auto;
+            margin-bottom: 1rem;
+        }
+        .process-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .process-table th, .process-table td {
+            padding: 0.7rem;
+            text-align: center;
+            border-bottom: 1px solid rgba(92, 124, 255, 0.2);
+            color: #CFE3FF;
+        }
+        .process-table th {
+            color: #6C8CFF;
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+        .process-table input {
+            background: #0E1625;
+            border: 1px solid #2A3650;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            color: white;
+            width: 80px;
+            text-align: center;
+        }
+        .delete-row-btn {
+            background: none;
+            border: none;
+            color: #FF6B6B;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(95deg, #5C7CFF, #3F5FDF);
+            border: none;
+            padding: 0.7rem 1.5rem;
+            border-radius: 0.7rem;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            margin-right: 0.8rem;
+        }
+        .btn-secondary {
+            background: rgba(92, 124, 255, 0.15);
+            border: 1px solid #5A7CFF;
+            padding: 0.7rem 1.5rem;
+            border-radius: 0.7rem;
+            color: #A0C0FF;
+            cursor: pointer;
+        }
+
+        /* Charts Grid */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .chart-card {
+            background: rgba(12, 20, 32, 0.7);
+            backdrop-filter: blur(8px);
+            border-radius: 1.5rem;
+            border: 1px solid rgba(92, 124, 255, 0.2);
+            padding: 1.5rem;
+        }
+        .chart-card h3 {
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            color: #A0C0FF;
+            text-align: center;
+        }
+        canvas {
+            max-height: 300px;
+            width: 100% !important;
+        }
+
+        /* Metrics Table */
+        .metrics-table-wrapper {
+            background: rgba(12, 20, 32, 0.7);
+            backdrop-filter: blur(8px);
+            border-radius: 1.5rem;
+            border: 1px solid rgba(92, 124, 255, 0.2);
+            padding: 1.5rem;
+            overflow-x: auto;
+        }
+        .metrics-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .metrics-table th, .metrics-table td {
+            padding: 0.8rem;
+            text-align: center;
+            border-bottom: 1px solid rgba(92, 124, 255, 0.2);
+        }
+        .metrics-table th {
+            color: #6C8CFF;
+            font-weight: 600;
+        }
+        .metrics-table td {
+            color: #CFE3FF;
+        }
+        .best-value {
+            color: #6BFF9E;
+            font-weight: 700;
+        }
+
+        @media (max-width: 900px) {
+            .charts-grid { grid-template-columns: 1fr; }
+            .navbar { padding: 1rem; flex-wrap: wrap; }
+            .nav-links { gap: 1rem; flex-wrap: wrap; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo" onclick="window.location.href='index.html'">
+            <i class="fas fa-microchip"></i> SmartCPU
+        </div>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="simulator.html">Simulator</a>
+            <a href="comparison.html" class="active">Comparison</a>
+            <a href="advanced.html">Advanced</a>
+            <a href="login.html" id="authLink">Login</a>
+        </div>
+    </nav>
+
+    <div class="comparison-container">
+        <!-- Process Input Section -->
+        <div class="process-input-section">
+            <h3 class="section-title"><i class="fas fa-tasks"></i> Process Configuration</h3>
+            <div class="process-table-wrapper">
+                <table class="process-table" id="processTable">
+                    <thead>
+                        <tr><th>PID</th><th>Arrival Time</th><th>Burst Time</th><th>Priority</th><th>Action</th></tr>
+                    </thead>
+                    <tbody id="processTableBody">
+                        <tr><td><input type="text" value="P1" class="pid-input"></td><td><input type="number" value="0" class="arrival-input"></td><td><input type="number" value="5" class="burst-input"></td><td><input type="number" value="2" class="priority-input"></td><td><button class="delete-row-btn"><i class="fas fa-trash"></i></button></td></tr>
+                        <tr><td><input type="text" value="P2" class="pid-input"></td><td><input type="number" value="1" class="arrival-input"></td><td><input type="number" value="3" class="burst-input"></td><td><input type="number" value="1" class="priority-input"></td><td><button class="delete-row-btn"><i class="fas fa-trash"></i></button></td></tr>
+                        <tr><td><input type="text" value="P3" class="pid-input"></td><td><input type="number" value="2" class="arrival-input"></td><td><input type="number" value="8" class="burst-input"></td><td><input type="number" value="3" class="priority-input"></td><td><button class="delete-row-btn"><i class="fas fa-trash"></i></button></td></tr>
+                        <tr><td><input type="text" value="P4" class="pid-input"></td><td><input type="number" value="3" class="arrival-input"></td><td><input type="number" value="6" class="burst-input"></td><td><input type="number" value="2" class="priority-input"></td><td><button class="delete-row-btn"><i class="fas fa-trash"></i></button></td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div>
+                <button class="btn-primary" id="addRowBtn"><i class="fas fa-plus"></i> Add Process</button>
+                <button class="btn-secondary" id="compareBtn"><i class="fas fa-chart-simple"></i> Compare Algorithms</button>
+            </div>
+        </div>
+
+        <!-- Charts Grid -->
+        <div class="charts-grid">
+            <div class="chart-card">
+                <h3><i class="fas fa-chart-bar"></i> Average Waiting Time Comparison</h3>
+                <canvas id="waitingTimeChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3><i class="fas fa-chart-pie"></i> Average Turnaround Time Comparison</h3>
+                <canvas id="turnaroundTimeChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Metrics Table -->
+        <div class="metrics-table-wrapper">
+            <h3 class="section-title" style="margin-bottom: 1rem;"><i class="fas fa-table"></i> Detailed Metrics Comparison</h3>
+            <table class="metrics-table" id="metricsTable">
+                <thead>
+                    <tr><th>Algorithm</th><th>Avg Waiting Time</th><th>Avg Turnaround Time</th><th>CPU Utilization</th><th>Throughput</th></tr>
+                </thead>
+                <tbody id="metricsTableBody">
+                    <tr><td colspan="5" style="text-align:center;">Click "Compare Algorithms" to see results</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let waitingChart, turnaroundChart;
+
+        function updateNavbar() {
+            const loggedIn = sessionStorage.getItem('cpu_sim_loggedIn') === 'true';
+            const authLink = document.getElementById('authLink');
+            if (loggedIn) {
+                const userName = sessionStorage.getItem('loggedUserName') || 'User';
+                authLink.innerHTML = `<i class="fas fa-user-circle"></i> ${userName.split(' ')[0]}`;
+                authLink.href = "#";
+            } else {
+                authLink.innerHTML = "Login";
+                authLink.href = "login.html";
+            }
+        }
+
+        function getProcessesFromTable() {
+            const rows = document.querySelectorAll('#processTableBody tr');
+            const processes = [];
+            rows.forEach((row, idx) => {
+                const pid = row.querySelector('.pid-input').value.trim();
+                const arrival = parseInt(row.querySelector('.arrival-input').value);
+                const burst = parseInt(row.querySelector('.burst-input').value);
+                const priority = parseInt(row.querySelector('.priority-input').value);
+                if (pid && !isNaN(arrival) && !isNaN(burst)) {
+                    processes.push({ pid, arrival, burst, priority: priority || 1 });
+                }
+            });
+            return processes;
+        }
+
+        // FCFS Algorithm
+        function runFCFS(procs) {
+            const sorted = [...procs].sort((a, b) => a.arrival - b.arrival);
+            let currentTime = 0;
+            let totalWaiting = 0, totalTurnaround = 0;
+            for (let p of sorted) {
+                const start = Math.max(currentTime, p.arrival);
+                const end = start + p.burst;
+                const turnaround = end - p.arrival;
+                const waiting = turnaround - p.burst;
+                totalWaiting += waiting;
+                totalTurnaround += turnaround;
+                currentTime = end;
+            }
+            const avgWaiting = totalWaiting / procs.length;
+            const avgTurnaround = totalTurnaround / procs.length;
+            const cpuUtil = (procs.reduce((sum, p) => sum + p.burst, 0) / currentTime) * 100;
+            const throughput = procs.length / currentTime;
+            return { avgWaiting, avgTurnaround, cpuUtil, throughput };
+        }
+
+        // SJF Algorithm
+        function runSJF(procs) {
+            let available = [...procs];
+            let currentTime = 0;
+            let totalWaiting = 0, totalTurnaround = 0;
+            const results = [];
+            while (available.length > 0) {
+                const availableNow = available.filter(p => p.arrival <= currentTime);
+                if (availableNow.length === 0) {
+                    currentTime = Math.min(...available.map(p => p.arrival));
+                    continue;
+                }
+                availableNow.sort((a, b) => a.burst - b.burst);
+                const next = availableNow[0];
+                const index = available.findIndex(p => p.pid === next.pid);
+                available.splice(index, 1);
+                const start = currentTime;
+                const end = start + next.burst;
+                const turnaround = end - next.arrival;
+                const waiting = turnaround - next.burst;
+                totalWaiting += waiting;
+                totalTurnaround += turnaround;
+                currentTime = end;
+            }
+            const avgWaiting = totalWaiting / procs.length;
+            const avgTurnaround = totalTurnaround / procs.length;
+            const totalBurst = procs.reduce((sum, p) => sum + p.burst, 0);
+            const cpuUtil = (totalBurst / currentTime) * 100;
+            const throughput = procs.length / currentTime;
+            return { avgWaiting, avgTurnaround, cpuUtil, throughput };
+        }
+
+        // Round Robin
+        function runRR(procs, quantum = 2) {
+            let queue = [...procs].sort((a, b) => a.arrival - b.arrival);
+            let currentTime = 0;
+            const remaining = new Map();
+            procs.forEach(p => remaining.set(p.pid, p.burst));
+            const arrivalMap = new Map();
+            procs.forEach(p => arrivalMap.set(p.pid, p.arrival));
+            const completion = new Map();
+            const waiting = new Map();
+            procs.forEach(p => waiting.set(p.pid, 0));
+            let idx = 0;
+            const readyQueue = [];
+            while (queue.length > 0 || readyQueue.length > 0) {
+                while (idx < queue.length && queue[idx].arrival <= currentTime) {
+                    readyQueue.push(queue[idx]);
+                    idx++;
+                }
+                if (readyQueue.length === 0) {
+                    currentTime = queue[idx].arrival;
+                    continue;
+                }
+                const current = readyQueue.shift();
+                const remainingTime = remaining.get(current.pid);
+                const execTime = Math.min(quantum, remainingTime);
+                currentTime += execTime;
+                const newRemaining = remainingTime - execTime;
+                remaining.set(current.pid, newRemaining);
+                while (idx < queue.length && queue[idx].arrival <= currentTime) {
+                    readyQueue.push(queue[idx]);
+                    idx++;
+                }
+                if (newRemaining > 0) {
+                    readyQueue.push(current);
+                } else {
+                    completion.set(current.pid, currentTime);
+                    const turn = currentTime - arrivalMap.get(current.pid);
+                    const wait = turn - current.burst;
+                    waiting.set(current.pid, wait);
+                }
+            }
+            let totalWaiting = 0, totalTurnaround = 0;
+            procs.forEach(p => {
+                totalWaiting += waiting.get(p.pid);
+                totalTurnaround += completion.get(p.pid) - p.arrival;
+            });
+            const avgWaiting = totalWaiting / procs.length;
+            const avgTurnaround = totalTurnaround / procs.length;
+            const totalBurst = procs.reduce((sum, p) => sum + p.burst, 0);
+            const cpuUtil = (totalBurst / currentTime) * 100;
+            const throughput = procs.length / currentTime;
+            return { avgWaiting, avgTurnaround, cpuUtil, throughput };
+        }
+
+        // Priority (Non-Preemptive)
+        function runPriority(procs) {
+            let available = [...procs];
+            let currentTime = 0;
+            let totalWaiting = 0, totalTurnaround = 0;
+            while (available.length > 0) {
+                const availableNow = available.filter(p => p.arrival <= currentTime);
+                if (availableNow.length === 0) {
+                    currentTime = Math.min(...available.map(p => p.arrival));
+                    continue;
+                }
+                availableNow.sort((a, b) => a.priority - b.priority);
+                const next = availableNow[0];
+                const index = available.findIndex(p => p.pid === next.pid);
+                available.splice(index, 1);
+                const start = currentTime;
+                const end = start + next.burst;
+                const turnaround = end - next.arrival;
+                const waiting = turnaround - next.burst;
+                totalWaiting += waiting;
+                totalTurnaround += turnaround;
+                currentTime = end;
+            }
+            const avgWaiting = totalWaiting / procs.length;
+            const avgTurnaround = totalTurnaround / procs.length;
+            const totalBurst = procs.reduce((sum, p) => sum + p.burst, 0);
+            const cpuUtil = (totalBurst / currentTime) * 100;
+            const throughput = procs.length / currentTime;
+            return { avgWaiting, avgTurnaround, cpuUtil, throughput };
+        }
+
+        function compareAlgorithms() {
+            const processes = getProcessesFromTable();
+            if (processes.length === 0) {
+                alert('Please add at least one process');
+                return;
+            }
+
+            const algorithms = ['FCFS', 'SJF', 'RR', 'Priority'];
+            const results = [];
+            
+            results.push({ name: 'FCFS', ...runFCFS(processes) });
+            results.push({ name: 'SJF', ...runSJF(processes) });
+            results.push({ name: 'RR (Quantum=2)', ...runRR(processes, 2) });
+            results.push({ name: 'Priority', ...runPriority(processes) });
+
+            // Update metrics table
+            const tableBody = document.getElementById('metricsTableBody');
+            tableBody.innerHTML = '';
+            results.forEach(r => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong>${r.name}</strong></td>
+                    <td>${r.avgWaiting.toFixed(2)}</td>
+                    <td>${r.avgTurnaround.toFixed(2)}</td>
+                    <td>${r.cpuUtil.toFixed(1)}%</td>
+                    <td>${r.throughput.toFixed(3)}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            // Update charts
+            const algoNames = results.map(r => r.name);
+            const waitingTimes = results.map(r => r.avgWaiting);
+            const turnaroundTimes = results.map(r => r.avgTurnaround);
+
+            if (waitingChart) waitingChart.destroy();
+            if (turnaroundChart) turnaroundChart.destroy();
+
+            const ctx1 = document.getElementById('waitingTimeChart').getContext('2d');
+            waitingChart = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: algoNames,
+                    datasets: [{
+                        label: 'Average Waiting Time',
+                        data: waitingTimes,
+                        backgroundColor: ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4'],
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { labels: { color: '#CFE3FF' } }
+                    },
+                    scales: {
+                        y: { title: { display: true, text: 'Time (units)', color: '#A7BBE0' }, ticks: { color: '#A7BBE0' } },
+                        x: { ticks: { color: '#CFE3FF' } }
+                    }
+                }
+            });
+
+            const ctx2 = document.getElementById('turnaroundTimeChart').getContext('2d');
+            turnaroundChart = new Chart(ctx2, {
+                type: 'pie',
+                data: {
+                    labels: algoNames,
+                    datasets: [{
+                        data: turnaroundTimes,
+                        backgroundColor: ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: '#CFE3FF' } },
+                        tooltip: { callbacks: { label: (ctx) => `${ctx.label}: ${ctx.raw.toFixed(2)} units` } }
+                    }
+                }
+            });
+        }
+
+        // Add row functionality
+        document.getElementById('addRowBtn').addEventListener('click', () => {
+            const tbody = document.getElementById('processTableBody');
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td><input type="text" value="P${tbody.children.length + 1}" class="pid-input"></td>
+                <td><input type="number" value="0" class="arrival-input"></td>
+                <td><input type="number" value="4" class="burst-input"></td>
+                <td><input type="number" value="1" class="priority-input"></td>
+                <td><button class="delete-row-btn"><i class="fas fa-trash"></i></button></td>
+            `;
+            tbody.appendChild(newRow);
+            attachDeleteEvents();
+        });
+
+        function attachDeleteEvents() {
+            document.querySelectorAll('.delete-row-btn').forEach(btn => {
+                btn.removeEventListener('click', deleteHandler);
+                btn.addEventListener('click', deleteHandler);
+            });
+        }
+
+        function deleteHandler(e) {
+            const row = e.target.closest('tr');
+            if (document.querySelectorAll('#processTableBody tr').length > 1) {
+                row.remove();
+            } else {
+                alert('Keep at least one process');
+            }
+        }
+
+        document.getElementById('compareBtn').addEventListener('click', compareAlgorithms);
+        
+        attachDeleteEvents();
+        updateNavbar();
+        
+        // Run initial comparison
+        setTimeout(() => compareAlgorithms(), 100);
+    </script>
+</body>
+</html>

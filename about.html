@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+   
+    <title>Smart CPU Scheduler | About Us</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at 30% 10%, #0A0F1A, #020408);
+            min-height: 100vh;
+            color: #EFF3FC;
+            line-height: 1.5;
+        }
+
+        /* Modern scroll */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #10141f;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #3b4b6e;
+            border-radius: 10px;
+        }
+
+        /* Navigation */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.2rem 3rem;
+            backdrop-filter: blur(12px);
+            background: rgba(5, 10, 20, 0.65);
+            border-bottom: 1px solid rgba(72, 120, 255, 0.25);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .logo {
+            font-size: 1.7rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #A0C0FF, #6C8CFF);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -0.3px;
+        }
+        .logo i {
+            background: none;
+            -webkit-background-clip: unset;
+            color: #6C8CFF;
+            margin-right: 6px;
+        }
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+        .nav-links a {
+            color: #CFE3FF;
+            text-decoration: none;
+            font-weight: 500;
+            transition: 0.2s;
+            font-size: 0.95rem;
+        }
+        .nav-links a:hover, .nav-links a.active {
+            color: white;
+            text-shadow: 0 0 6px #6C8CFF;
+        }
+        .btn-outline-light {
+            border: 1px solid #6C8CFF;
+            background: transparent;
+            padding: 0.4rem 1.2rem;
+            border-radius: 40px;
+            color: #6C8CFF;
+            font-weight: 500;
+            transition: 0.2s;
+            cursor: pointer;
+        }
+        .btn-outline-light:hover {
+            background: #6C8CFF20;
+            border-color: #A0C0FF;
+            color: white;
+        }
+
+        /* Main Content */
+        .about-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 3rem 2rem 4rem;
+        }
+
+        /* Hero Section */
+        .about-hero {
+            text-align: center;
+            margin-bottom: 4rem;
+            animation: fadeInUp 0.6s ease;
+        }
+        .about-hero .badge {
+            background: rgba(26, 37, 60, 0.7);
+            backdrop-filter: blur(4px);
+            display: inline-block;
+            padding: 0.3rem 1rem;
+            border-radius: 60px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #AFC9FF;
+            margin-bottom: 1.5rem;
+            border: 1px solid #2D3A5A;
+        }
+        .about-hero h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #FFFFFF, #B9D0FF);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 1rem;
+        }
+        .about-hero p {
+            font-size: 1.1rem;
+            color: #B8CCF0;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        /* Mission Section */
+        .mission-section {
+            background: rgba(15, 25, 40, 0.5);
+            backdrop-filter: blur(8px);
+            border-radius: 2rem;
+            padding: 2.5rem;
+            margin-bottom: 3rem;
+            border: 1px solid rgba(92, 124, 255, 0.2);
+            transition: transform 0.3s ease;
+            animation: fadeInUp 0.6s ease 0.1s both;
+        }
+        .mission-section:hover {
+            transform: translateY(-5px);
+            border-color: rgba(92, 124, 255, 0.4);
+        }
+        .mission-icon {
+            font-size: 3rem;
+            color: #6C8CFF;
+            margin-bottom: 1rem;
+        }
+        .mission-section h2 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+        }
+        .mission-section p {
+            color: #C5D5F5;
+            line-height: 1.7;
+        }
+
+        /* Values Grid */
+        .values-section {
+            margin-bottom: 3rem;
+        }
+        .values-section h2 {
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            background: linear-gradient(135deg, #FFFFFF, #A0C0FF);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .values-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.8rem;
+        }
+        .value-card {
+            background: rgba(12, 22, 35, 0.6);
+            backdrop-filter: blur(4px);
+            border-radius: 1.5rem;
+            padding: 1.8rem;
+            text-align: center;
+            border: 1px solid rgba(72, 120, 255, 0.2);
+            transition: all 0.3s ease;
+            animation: fadeInUp 0.6s ease both;
+        }
+        .value-card:nth-child(1) { animation-delay: 0.1s; }
+        .value-card:nth-child(2) { animation-delay: 0.2s; }
+        .value-card:nth-child(3) { animation-delay: 0.3s; }
+        .value-card:nth-child(4) { animation-delay: 0.4s; }
+        .value-card:hover {
+            transform: translateY(-8px);
+            border-color: #5A7CFF;
+            background: rgba(20, 35, 55, 0.8);
+        }
+        .value-icon {
+            font-size: 2.5rem;
+            color: #6C8CFF;
+            margin-bottom: 1rem;
+        }
+        .value-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 0.8rem;
+        }
+        .value-card p {
+            color: #B2C4E8;
+            font-size: 0.9rem;
+        }
+
+        /* Team Section */
+        .team-section {
+            margin-bottom: 3rem;
+        }
+        .team-section h2 {
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            background: linear-gradient(135deg, #FFFFFF, #A0C0FF);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+        .team-card {
+            background: rgba(12, 22, 35, 0.6);
+            backdrop-filter: blur(4px);
+            border-radius: 1.5rem;
+            padding: 1.8rem;
+            text-align: center;
+            border: 1px solid rgba(72, 120, 255, 0.2);
+            transition: all 0.3s ease;
+            animation: fadeInUp 0.6s ease both;
+        }
+        .team-card:nth-child(1) { animation-delay: 0.1s; }
+        .team-card:nth-child(2) { animation-delay: 0.2s; }
+        .team-card:nth-child(3) { animation-delay: 0.3s; }
+        .team-card:hover {
+            transform: translateY(-5px);
+            border-color: #5A7CFF;
+        }
+        .team-avatar {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #3B5BDB, #6C8CFF);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 2.5rem;
+            color: white;
+        }
+        .team-card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.3rem;
+        }
+        .team-role {
+            color: #6C8CFF;
+            font-size: 0.85rem;
+            margin-bottom: 0.8rem;
+        }
+        .team-bio {
+            color: #B2C4E8;
+            font-size: 0.85rem;
+        }
+
+        /* Stats Section */
+        .stats-about {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 2rem;
+            margin: 3rem auto;
+            padding: 2rem;
+            background: rgba(10, 18, 30, 0.5);
+            backdrop-filter: blur(8px);
+            border-radius: 2rem;
+            border: 1px solid rgba(92, 124, 255, 0.2);
+            animation: fadeInUp 0.6s ease 0.5s both;
+        }
+        .stat-item {
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #7D9EFF;
+        }
+        .stat-label {
+            font-size: 0.85rem;
+            color: #A7BBE0;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            text-align: center;
+            background: linear-gradient(135deg, rgba(59, 91, 219, 0.15), rgba(108, 140, 255, 0.08));
+            border-radius: 2rem;
+            padding: 3rem;
+            margin-top: 2rem;
+            border: 1px solid rgba(92, 124, 255, 0.3);
+            animation: fadeInUp 0.6s ease 0.6s both;
+        }
+        .cta-section h3 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+        }
+        .cta-section p {
+            color: #B8CCF0;
+            margin-bottom: 1.5rem;
+        }
+        .btn-solid {
+            background: linear-gradient(100deg, #5A7CFF, #3B5BDB);
+            border: none;
+            padding: 0.7rem 2rem;
+            border-radius: 40px;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.2s;
+            box-shadow: 0 6px 14px rgba(59, 91, 219, 0.3);
+            font-size: 1rem;
+        }
+        .btn-solid:hover {
+            transform: scale(0.97);
+            box-shadow: 0 2px 8px rgba(59, 91, 219, 0.5);
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            border-top: 1px solid #152032;
+            margin-top: 3rem;
+            color: #6A7DA0;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 800px) {
+            .navbar { padding: 1rem; flex-wrap: wrap; gap: 10px; }
+            .nav-links { gap: 1rem; }
+            .about-hero h1 { font-size: 2.2rem; }
+            .about-container { padding: 2rem 1rem; }
+            .mission-section { padding: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="logo" style="cursor: pointer;" onclick="window.location.href='index.html'"><i class="fas fa-microchip"></i> SmartCPU</div>
+    <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="about.html" class="active">About Us</a>
+        <a href="login.html">Login</a>
+        <a href="signup.html">Sign Up</a>
+    </div>
+</nav>
+
+<div class="about-container">
+    <div class="about-hero">
+        <div class="badge"><i class="fas fa-info-circle"></i> Who We Are</div>
+        <h1>About Smart CPU <span style="color:#fff;">Scheduling Analyzer</span></h1>
+        <p>Empowering students, educators, and developers to master CPU scheduling through interactive visualization and real-time analytics.</p>
+    </div>
+
+    <div class="mission-section">
+        <div class="mission-icon"><i class="fas fa-bullseye"></i></div>
+        <h2>Our Mission</h2>
+        <p>We believe that understanding CPU scheduling algorithms shouldn't be抽象的 and difficult. Our mission is to provide an intuitive, interactive platform that transforms complex scheduling concepts into visual, hands-on learning experiences. Whether you're a computer science student preparing for exams, an educator teaching operating systems, or a developer optimizing system performance, Smart CPU Scheduling Analyzer gives you the tools to simulate, compare, and analyze algorithms in real-time.</p>
+    </div>
+
+    <div class="values-section">
+        <h2><i class="fas fa-gem"></i> Our Core Values</h2>
+        <div class="values-grid">
+            <div class="value-card">
+                <div class="value-icon"><i class="fas fa-chalkboard-user"></i></div>
+                <h3>Education First</h3>
+                <p>Making complex OS concepts accessible through interactive visualization and real-time feedback.</p>
+            </div>
+            <div class="value-card">
+                <div class="value-icon"><i class="fas fa-chart-line"></i></div>
+                <h3>Data-Driven</h3>
+                <p>Providing detailed metrics and analytics to help users understand performance trade-offs.</p>
+            </div>
+            <div class="value-card">
+                <div class="value-icon"><i class="fas fa-code-branch"></i></div>
+                <h3>Open Innovation</h3>
+                <p>Continuously improving with new algorithms, multi-core support, and advanced features.</p>
+            </div>
+            <div class="value-card">
+                <div class="value-icon"><i class="fas fa-users"></i></div>
+                <h3>Community Driven</h3>
+                <p>Built by developers, for learners — incorporating feedback to create the best learning tool.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="team-section">
+        <h2><i class="fas fa-user-friends"></i> Meet the Team</h2>
+        <div class="team-grid">
+            <div class="team-card">
+                <div class="team-avatar"><i class="fas fa-laptop-code"></i></div>
+                <h3>Mahi Sheth</h3>
+                
+                <div class="team-bio">IT Student</div>
+            </div>
+            <div class="team-card">
+                <div class="team-avatar"><i class="fas fa-chart-pie"></i></div>
+                <h3>Surabhi Singh</h3>
+                
+                <div class="team-bio">IT Student</div>
+            </div>
+            <div class="team-card">
+                <div class="team-avatar"><i class="fas fa-palette"></i></div>
+                <h3>Vaidehi Sonawane</h3>
+                
+                <div class="team-bio">IT Student</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="stats-about">
+        <div class="stat-item">
+            <div class="stat-number">6+</div>
+            <div class="stat-label">Scheduling Algorithms</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">10K+</div>
+            <div class="stat-label">Active Users</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">99%</div>
+            <div class="stat-label">Accuracy Rate</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">24/7</div>
+            <div class="stat-label">Simulation Access</div>
+        </div>
+    </div>
+
+    <div class="cta-section">
+        <h3>Ready to Master CPU Scheduling?</h3>
+        <p>Join thousands of students and developers using our platform to understand scheduling algorithms.</p>
+        <button class="btn-solid" id="getStartedBtn"><i class="fas fa-rocket"></i> Get Started Now</button>
+    </div>
+</div>
+
+<footer>
+    <p>© 2025 Smart CPU Scheduling Analyzer — precision scheduling intelligence</p>
+</footer>
+
+<script>
+    // Get Started button - redirect based on login status
+    document.getElementById('getStartedBtn').addEventListener('click', () => {
+        const loggedIn = sessionStorage.getItem('cpu_sim_loggedIn') === 'true';
+        if(loggedIn) {
+            window.location.href = 'simulator.html';
+        } else {
+            window.location.href = 'login.html';
+        }
+    });
+
+    // Animate stats numbers on load (optional)
+    function animateNumbers() {
+        const statNumbers = document.querySelectorAll('.stat-number');
+        statNumbers.forEach(el => {
+            const text = el.innerText;
+            if (text.includes('+') || text.includes('%')) {
+                const value = parseInt(text);
+                if (!isNaN(value)) {
+                    let current = 0;
+                    const target = value;
+                    const increment = target / 50;
+                    const interval = setInterval(() => {
+                        current += increment;
+                        if (current >= target) {
+                            el.innerText = text;
+                            clearInterval(interval);
+                        } else {
+                            el.innerText = Math.floor(current) + (text.includes('%') ? '%' : (text.includes('+') ? '+' : ''));
+                        }
+                    }, 20);
+                }
+            }
+        });
+    }
+    
+    // Run animation when page loads
+    window.addEventListener('load', () => {
+        // Small delay for smooth animation
+        setTimeout(animateNumbers, 500);
+    });
+
+    // Add active class to current nav link
+    const currentPath = window.location.pathname;
+    const navLinks = document.querySelectorAll('.nav-links a');
+    navLinks.forEach(link => {
+        if (link.getAttribute('href') === 'about.html' || link.getAttribute('href') === '#') {
+            if (currentPath.includes('about')) {
+                link.classList.add('active');
+            }
+        }
+    });
+</script>
+</body>
+</html>
