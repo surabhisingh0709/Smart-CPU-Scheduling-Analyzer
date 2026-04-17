@@ -1,7 +1,9 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import subprocess
 
 app = Flask(__name__)
+CORS(app)
 
 @app.route('/run', methods=['POST'])
 def run_scheduler():
@@ -30,19 +32,21 @@ def run_scheduler():
         capture_output=True
     )
 
-    output = result.stdout
-
-    # 🔥 NEW PART — convert output → JSON
-    lines = output.strip().split("\n")
+    lines = result.stdout.strip().split("\n")
 
     gantt = []
     metrics = {}
 
     i = 0
+
+    # 🔥 SKIP FIRST LINE (algorithm name like SJF)
+    i += 1
+
+    # 🔹 READ GANTT DATA
     while i < len(lines) and lines[i] != "---":
         parts = lines[i].split()
         gantt.append({
-            "pid": int(parts[0]),
+            "pid": f"P{parts[0]}",   # 👈 IMPORTANT (frontend expects P1, P2)
             "start": int(parts[1]),
             "end": int(parts[2])
         })
@@ -51,6 +55,7 @@ def run_scheduler():
     # skip ---
     i += 1
 
+    # 🔹 READ METRICS
     if i < len(lines):
         vals = lines[i].split()
         metrics = {
@@ -58,7 +63,6 @@ def run_scheduler():
             "avg_turnaround": float(vals[1])
         }
 
-    # 🔹 Final clean response
     return jsonify({
         "gantt": gantt,
         "metrics": metrics

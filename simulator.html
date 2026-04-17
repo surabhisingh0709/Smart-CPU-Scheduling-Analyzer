@@ -668,38 +668,69 @@
             `;
         }
 
-        function runSimulation() {
-            if (processes.length === 0) {
-                alert('Please add at least one process');
-                return;
-            }
-            
-            const algorithm = document.getElementById('algorithmSelect').value;
-            const quantum = parseInt(document.getElementById('quantumInput').value) || 2;
-            let result;
-            
-            switch(algorithm) {
-                case 'FCFS': result = runFCFS(processes); break;
-                case 'SJF': result = runSJF(processes); break;
-                case 'RR': result = runRR(processes, quantum); break;
-                default: result = runFCFS(processes);
-            }
-            
-            const { gantt, results } = result;
-            const maxTime = Math.max(...gantt.map(b => b.end), 1);
-            
-            let totalWaiting = 0, totalTurnaround = 0;
-            results.forEach(r => {
-                totalWaiting += r.waiting;
-                totalTurnaround += r.turnaround;
-            });
-            
-            document.getElementById('avgWaitingTime').innerText = (totalWaiting / results.length).toFixed(2);
-            document.getElementById('avgTurnaroundTime').innerText = (totalTurnaround / results.length).toFixed(2);
-            document.getElementById('currentAlgoBadge').innerText = algorithm;
-            
-            renderGanttChart(gantt, maxTime, algorithm);
+function runSimulation() {
+    if (processes.length === 0) {
+        alert('Please add at least one process');
+        return;
+    }
+
+    const algorithm = document.getElementById('algorithmSelect').value;
+    const quantum = parseInt(document.getElementById('quantumInput').value) || 2;
+
+    // Convert to backend format
+    const formattedProcesses = processes.map((p, index) => ({
+        pid: index + 1,
+        arrival: p.arrival,
+        burst: p.burst,
+        priority: p.priority
+    }));
+
+    fetch("http://127.0.0.1:5000/run", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            processes: formattedProcesses,
+            algorithm: algorithm,
+            quantum: quantum
+        })
+    })
+    .then(async (res) => {
+        const text = await res.text();
+        try {
+            return JSON.parse(text);
+        } catch (e) {
+            console.error("Invalid JSON:", text);
+            throw new Error("Invalid JSON from backend");
         }
+    })
+    .then(data => {
+        console.log("Backend response:", data);
+
+        if (!data.gantt || !data.metrics) {
+            alert("Invalid response from backend");
+            return;
+        }
+
+        const gantt = data.gantt;
+        const maxTime = Math.max(...gantt.map(b => b.end), 1);
+
+        document.getElementById('avgWaitingTime').innerText =
+            data.metrics.avg_waiting.toFixed(2);
+
+        document.getElementById('avgTurnaroundTime').innerText =
+            data.metrics.avg_turnaround.toFixed(2);
+
+        document.getElementById('currentAlgoBadge').innerText = algorithm;
+
+        renderGanttChart(gantt, maxTime, algorithm);
+    })
+    .catch(err => {
+        console.error("FULL ERROR:", err);
+        alert("Error connecting to backend");
+    });
+}
 
         document.getElementById('addProcessBtn').addEventListener('click', addProcess);
         document.getElementById('randomGenerateBtn').addEventListener('click', randomGenerate);

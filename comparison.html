@@ -452,90 +452,105 @@
             return { avgWaiting, avgTurnaround, cpuUtil, throughput };
         }
 
-        function compareAlgorithms() {
-            const processes = getProcessesFromTable();
-            if (processes.length === 0) {
-                alert('Please add at least one process');
-                return;
-            }
+        async function compareAlgorithms() {
+    const processes = getProcessesFromTable();
 
-            const algorithms = ['FCFS', 'SJF', 'RR', 'Priority'];
-            const results = [];
-            
-            results.push({ name: 'FCFS', ...runFCFS(processes) });
-            results.push({ name: 'SJF', ...runSJF(processes) });
-            results.push({ name: 'RR (Quantum=2)', ...runRR(processes, 2) });
-            results.push({ name: 'Priority', ...runPriority(processes) });
+    if (processes.length === 0) {
+        alert('Please add at least one process');
+        return;
+    }
 
-            // Update metrics table
-            const tableBody = document.getElementById('metricsTableBody');
-            tableBody.innerHTML = '';
-            results.forEach(r => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td><strong>${r.name}</strong></td>
-                    <td>${r.avgWaiting.toFixed(2)}</td>
-                    <td>${r.avgTurnaround.toFixed(2)}</td>
-                    <td>${r.cpuUtil.toFixed(1)}%</td>
-                    <td>${r.throughput.toFixed(3)}</td>
-                `;
-                tableBody.appendChild(row);
-            });
+    // 🔹 convert to backend format
+    const formattedProcesses = processes.map((p, index) => ({
+        pid: index + 1,
+        arrival: p.arrival,
+        burst: p.burst,
+        priority: p.priority
+    }));
 
-            // Update charts
-            const algoNames = results.map(r => r.name);
-            const waitingTimes = results.map(r => r.avgWaiting);
-            const turnaroundTimes = results.map(r => r.avgTurnaround);
+    const algorithms = ["FCFS", "SJF", "RR", "PRIORITY"];
+    const results = [];
 
-            if (waitingChart) waitingChart.destroy();
-            if (turnaroundChart) turnaroundChart.destroy();
-
-            const ctx1 = document.getElementById('waitingTimeChart').getContext('2d');
-            waitingChart = new Chart(ctx1, {
-                type: 'bar',
-                data: {
-                    labels: algoNames,
-                    datasets: [{
-                        label: 'Average Waiting Time',
-                        data: waitingTimes,
-                        backgroundColor: ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4'],
-                        borderRadius: 8
-                    }]
+    for (let algo of algorithms) {
+        try {
+            const res = await fetch("http://127.0.0.1:5000/run", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    plugins: {
-                        legend: { labels: { color: '#CFE3FF' } }
-                    },
-                    scales: {
-                        y: { title: { display: true, text: 'Time (units)', color: '#A7BBE0' }, ticks: { color: '#A7BBE0' } },
-                        x: { ticks: { color: '#CFE3FF' } }
-                    }
-                }
+                body: JSON.stringify({
+                    processes: formattedProcesses,
+                    algorithm: algo,
+                    quantum: 2
+                })
             });
 
-            const ctx2 = document.getElementById('turnaroundTimeChart').getContext('2d');
-            turnaroundChart = new Chart(ctx2, {
-                type: 'pie',
-                data: {
-                    labels: algoNames,
-                    datasets: [{
-                        data: turnaroundTimes,
-                        backgroundColor: ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4'],
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    plugins: {
-                        legend: { position: 'bottom', labels: { color: '#CFE3FF' } },
-                        tooltip: { callbacks: { label: (ctx) => `${ctx.label}: ${ctx.raw.toFixed(2)} units` } }
-                    }
-                }
+            const data = await res.json();
+
+            if (!data.metrics) continue;
+
+            results.push({
+                name: algo,
+                avgWaiting: data.metrics.avg_waiting,
+                avgTurnaround: data.metrics.avg_turnaround,
+                cpuUtil: 0,        // optional (not from backend)
+                throughput: 0      // optional
             });
+
+        } catch (err) {
+            console.error("Error:", err);
+            alert("Backend connection failed");
+            return;
         }
+    }
+
+    // 🔹 update table
+    const tableBody = document.getElementById('metricsTableBody');
+    tableBody.innerHTML = '';
+
+    results.forEach(r => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td><strong>${r.name}</strong></td>
+            <td>${r.avgWaiting.toFixed(2)}</td>
+            <td>${r.avgTurnaround.toFixed(2)}</td>
+            <td>-</td>
+            <td>-</td>
+        `;
+        tableBody.appendChild(row);
+    });
+
+    // 🔹 charts
+    const algoNames = results.map(r => r.name);
+    const waitingTimes = results.map(r => r.avgWaiting);
+    const turnaroundTimes = results.map(r => r.avgTurnaround);
+
+    if (waitingChart) waitingChart.destroy();
+    if (turnaroundChart) turnaroundChart.destroy();
+
+    const ctx1 = document.getElementById('waitingTimeChart').getContext('2d');
+    waitingChart = new Chart(ctx1, {
+        type: 'bar',
+        data: {
+            labels: algoNames,
+            datasets: [{
+                label: 'Average Waiting Time',
+                data: waitingTimes
+            }]
+        }
+    });
+
+    const ctx2 = document.getElementById('turnaroundTimeChart').getContext('2d');
+    turnaroundChart = new Chart(ctx2, {
+        type: 'pie',
+        data: {
+            labels: algoNames,
+            datasets: [{
+                data: turnaroundTimes
+            }]
+        }
+    });
+}
 
         // Add row functionality
         document.getElementById('addRowBtn').addEventListener('click', () => {
