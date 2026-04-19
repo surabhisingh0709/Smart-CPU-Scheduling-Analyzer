@@ -19,6 +19,7 @@
             color: #EFF3FC;
             line-height: 1.5;
             min-height: 100vh;
+            overflow-x: hidden;
         }
 
         ::-webkit-scrollbar {
@@ -82,6 +83,7 @@
             max-width: 1600px;
             margin: 0 auto;
             padding: 2rem;
+            overflow-x: hidden;
         }
 
         .two-columns {
@@ -198,6 +200,9 @@
             width: 100%;
             margin-top: 0.5rem;
         }
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
         .btn-secondary {
             background: rgba(92, 124, 255, 0.15);
             border: 1px solid #5A7CFF;
@@ -224,6 +229,7 @@
             padding: 1.5rem;
             display: flex;
             flex-direction: column;
+            overflow-x: hidden;
         }
 
         .gantt-header {
@@ -240,12 +246,27 @@
             color: #6C8CFF;
         }
         
+        /* Gantt wrapper - ONLY this container has horizontal scroll */
         .gantt-wrapper {
             background: #0A0F1A;
             border-radius: 1rem;
             padding: 1rem;
             margin-bottom: 1rem;
             overflow-x: auto;
+            overflow-y: visible;
+        }
+        
+        /* Hide scrollbar for cleaner look (optional - keeps functionality) */
+        .gantt-wrapper::-webkit-scrollbar {
+            height: 6px;
+        }
+        .gantt-wrapper::-webkit-scrollbar-track {
+            background: #1a1f2e;
+            border-radius: 10px;
+        }
+        .gantt-wrapper::-webkit-scrollbar-thumb {
+            background: #5A7CFF;
+            border-radius: 10px;
         }
         
         .gantt-chart-container {
@@ -340,11 +361,11 @@
 </head>
 <body>
     <nav class="navbar">
-        <div class="logo" onclick="window.location.href='index.html'">
+        <div class="logo" onclick="window.location.href='index2.html'">
             <i class="fas fa-microchip"></i> SmartCPU
         </div>
         <div class="nav-links" id="navLinks">
-            <a href="index.html">Home</a>
+            <a href="index2.html">Home</a>
             <a href="about.html">About Us</a>
             <a href="simulator.html" class="active">Simulator</a>
             <a href="comparison.html">Comparison</a>
@@ -398,6 +419,7 @@
                     <span class="algorithm-badge" id="currentAlgoBadge">FCFS</span>
                 </div>
                 
+                <!-- ONLY this div has horizontal scroll - NOT the whole page -->
                 <div class="gantt-wrapper" id="ganttWrapper">
                     <div id="ganttContainer">
                         <div class="placeholder"><i class="fas fa-chart-gantt"></i> Run simulation to see Gantt chart</div>
@@ -433,15 +455,43 @@
             return fallbackColors[0];
         }
 
+        // Function to get user data from localStorage (same database as signup)
+        function getUserData() {
+            const usersDB = localStorage.getItem('cpu_sim_users_db');
+            if (usersDB) {
+                const users = JSON.parse(usersDB);
+                const loggedInEmail = sessionStorage.getItem('loggedUserEmail');
+                if (loggedInEmail && users[loggedInEmail]) {
+                    return users[loggedInEmail];
+                }
+            }
+            return null;
+        }
+
+        // Get user's full name from signup data
+        function getUserFullName() {
+            const userData = getUserData();
+            if (userData) {
+                if (userData.firstName && userData.lastName) {
+                    return `${userData.firstName} ${userData.lastName}`;
+                }
+                if (userData.name) {
+                    return userData.name;
+                }
+            }
+            return sessionStorage.getItem('loggedUserName') || 'User';
+        }
+
         function updateNavbarWithLogout() {
             const loggedIn = sessionStorage.getItem('cpu_sim_loggedIn') === 'true';
             const authSection = document.getElementById('authSection');
             
             if (loggedIn) {
-                const userName = sessionStorage.getItem('loggedUserName') || 'User';
+                const fullName = getUserFullName();
+                const firstName = fullName.split(' ')[0];
                 authSection.innerHTML = `
                     <div style="display: flex; align-items: center; gap: 1rem;">
-                        <span style="color: #6C8CFF;"><i class="fas fa-user-circle"></i> ${userName.split(' ')[0]}</span>
+                        <span style="color: #6C8CFF;"><i class="fas fa-user-circle"></i> ${firstName}</span>
                         <button onclick="logoutUser()" style="background: rgba(255,107,107,0.15); border: 1px solid #FF6B6B; padding: 0.3rem 0.8rem; border-radius: 40px; color: #FF6B6B; cursor: pointer; font-size: 0.75rem;">
                             <i class="fas fa-sign-out-alt"></i> Logout
                         </button>
@@ -456,6 +506,8 @@
             sessionStorage.removeItem('cpu_sim_loggedIn');
             sessionStorage.removeItem('loggedUserEmail');
             sessionStorage.removeItem('loggedUserName');
+            sessionStorage.removeItem('tempLoginEmail');
+            sessionStorage.removeItem('tempUserData');
             alert('✅ Logged out successfully!');
             window.location.href = 'index.html';
         }
@@ -658,7 +710,7 @@
             labelsHTML += '</div>';
             
             container.innerHTML = `
-                <div class="gantt-chart-container" style="overflow-x: auto;">
+                <div class="gantt-chart-container">
                     <div style="min-width: ${chartWidth}px;">
                         ${timelineHTML}
                         ${blocksHTML}
@@ -668,69 +720,38 @@
             `;
         }
 
-function runSimulation() {
-    if (processes.length === 0) {
-        alert('Please add at least one process');
-        return;
-    }
-
-    const algorithm = document.getElementById('algorithmSelect').value;
-    const quantum = parseInt(document.getElementById('quantumInput').value) || 2;
-
-    // Convert to backend format
-    const formattedProcesses = processes.map((p, index) => ({
-        pid: index + 1,
-        arrival: p.arrival,
-        burst: p.burst,
-        priority: p.priority
-    }));
-
-    fetch("http://127.0.0.1:5000/run", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            processes: formattedProcesses,
-            algorithm: algorithm,
-            quantum: quantum
-        })
-    })
-    .then(async (res) => {
-        const text = await res.text();
-        try {
-            return JSON.parse(text);
-        } catch (e) {
-            console.error("Invalid JSON:", text);
-            throw new Error("Invalid JSON from backend");
+        function runSimulation() {
+            if (processes.length === 0) {
+                alert('Please add at least one process');
+                return;
+            }
+            
+            const algorithm = document.getElementById('algorithmSelect').value;
+            const quantum = parseInt(document.getElementById('quantumInput').value) || 2;
+            let result;
+            
+            switch(algorithm) {
+                case 'FCFS': result = runFCFS(processes); break;
+                case 'SJF': result = runSJF(processes); break;
+                case 'RR': result = runRR(processes, quantum); break;
+                default: result = runFCFS(processes);
+            }
+            
+            const { gantt, results } = result;
+            const maxTime = Math.max(...gantt.map(b => b.end), 1);
+            
+            let totalWaiting = 0, totalTurnaround = 0;
+            results.forEach(r => {
+                totalWaiting += r.waiting;
+                totalTurnaround += r.turnaround;
+            });
+            
+            document.getElementById('avgWaitingTime').innerText = (totalWaiting / results.length).toFixed(2);
+            document.getElementById('avgTurnaroundTime').innerText = (totalTurnaround / results.length).toFixed(2);
+            document.getElementById('currentAlgoBadge').innerText = algorithm;
+            
+            renderGanttChart(gantt, maxTime, algorithm);
         }
-    })
-    .then(data => {
-        console.log("Backend response:", data);
-
-        if (!data.gantt || !data.metrics) {
-            alert("Invalid response from backend");
-            return;
-        }
-
-        const gantt = data.gantt;
-        const maxTime = Math.max(...gantt.map(b => b.end), 1);
-
-        document.getElementById('avgWaitingTime').innerText =
-            data.metrics.avg_waiting.toFixed(2);
-
-        document.getElementById('avgTurnaroundTime').innerText =
-            data.metrics.avg_turnaround.toFixed(2);
-
-        document.getElementById('currentAlgoBadge').innerText = algorithm;
-
-        renderGanttChart(gantt, maxTime, algorithm);
-    })
-    .catch(err => {
-        console.error("FULL ERROR:", err);
-        alert("Error connecting to backend");
-    });
-}
 
         document.getElementById('addProcessBtn').addEventListener('click', addProcess);
         document.getElementById('randomGenerateBtn').addEventListener('click', randomGenerate);
