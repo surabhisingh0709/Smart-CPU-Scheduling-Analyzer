@@ -78,6 +78,47 @@
             text-shadow: 0 0 6px #6C8CFF;
         }
 
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            background: rgba(92, 124, 255, 0.15);
+            padding: 0.3rem 1rem;
+            border-radius: 40px;
+            border: 1px solid rgba(92, 124, 255, 0.3);
+        }
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #5A7CFF, #3B5BDB);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: white;
+        }
+        .user-name {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #CFE3FF;
+        }
+        .logout-btn {
+            background: rgba(255, 107, 107, 0.15);
+            border: 1px solid #FF6B6B;
+            padding: 0.25rem 0.7rem;
+            border-radius: 40px;
+            color: #FF6B6B;
+            cursor: pointer;
+            font-size: 0.7rem;
+            transition: 0.2s;
+        }
+        .logout-btn:hover {
+            background: rgba(255, 107, 107, 0.3);
+            transform: scale(0.95);
+        }
+
         .advanced-container {
             max-width: 1400px;
             margin: 0 auto;
@@ -346,6 +387,31 @@
             to { transform: rotate(360deg); }
         }
 
+        /* Aesthetic Gradient Colors for Process Boxes */
+        .gantt-block {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .gantt-block::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+        .gantt-block:hover::before {
+            left: 100%;
+        }
+        .gantt-block:hover {
+            transform: translateY(-3px);
+            filter: brightness(1.05);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+
         @media (max-width: 900px) {
             .advanced-grid { grid-template-columns: 1fr; }
             .metrics-row { grid-template-columns: repeat(2, 1fr); }
@@ -371,7 +437,6 @@
 
     <div class="advanced-container">
         <div class="advanced-grid">
-            <!-- MLFQ Configuration Panel -->
             <div class="card">
                 <h3 class="card-title"><i class="fas fa-layer-group"></i> MLFQ Configuration</h3>
                 <div class="mlfq-config">
@@ -403,7 +468,6 @@
                 <button class="btn-secondary" id="applyMLFQBtn" style="margin-top: 1rem; width: 100%;"><i class="fas fa-save"></i> Apply MLFQ Settings</button>
             </div>
 
-            <!-- Multi-core Simulation View -->
             <div class="card">
                 <h3 class="card-title"><i class="fas fa-microchip"></i> Multi-core Simulation</h3>
                 <div class="cpu-cores" id="cpuCores">
@@ -444,7 +508,6 @@
             </div>
         </div>
 
-        <!-- Dynamic Process Controls -->
         <div class="card" style="margin-bottom: 1.5rem;">
             <h3 class="card-title"><i class="fas fa-sliders-h"></i> Dynamic Process Controls</h3>
             <div class="process-controls">
@@ -462,7 +525,6 @@
             </div>
         </div>
 
-        <!-- Simulation Output -->
         <div class="simulation-output">
             <h3 class="card-title" style="margin-bottom: 0.5rem;"><i class="fas fa-chart-line"></i> Simulation Results</h3>
             <div class="gantt-container" id="ganttContainer">
@@ -507,18 +569,78 @@
             { pid: 4, arrival: 3, burst: 6, priority: 2 }
         ];
 
-        const processColors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8', '#F7B787'];
+        // Aesthetic gradient colors for each process - soft, beautiful, faded
+        const processGradients = {
+            1: 'linear-gradient(135deg, #FF6B6B, #EE5A5A)',      // Soft Coral Red
+            2: 'linear-gradient(135deg, #4ECDC4, #3DBDB4)',      // Soft Turquoise
+            3: 'linear-gradient(135deg, #45B7D1, #35A7C1)',      // Soft Sky Blue
+            4: 'linear-gradient(135deg, #96CEB4, #86BEA4)',      // Soft Sage Green
+            5: 'linear-gradient(135deg, #FFEAA7, #EFDA97)',      // Soft Yellow
+            6: 'linear-gradient(135deg, #DDA0DD, #CD90CD)',      // Soft Plum
+            7: 'linear-gradient(135deg, #98D8C8, #88C8B8)',      // Soft Mint
+            8: 'linear-gradient(135deg, #F7B787, #E7A777)'       // Soft Peach
+        };
 
-        function updateNavbar() {
+        function getProcessGradient(pid) {
+            const pidNum = parseInt(pid.replace('P', ''));
+            return processGradients[(pidNum - 1) % 8 + 1] || 'linear-gradient(135deg, #5A7CFF, #3B5BDB)';
+        }
+
+        function getUserData() {
+            const usersDB = localStorage.getItem('cpu_sim_users_db');
+            if (usersDB) {
+                const users = JSON.parse(usersDB);
+                const loggedInEmail = sessionStorage.getItem('loggedUserEmail');
+                if (loggedInEmail && users[loggedInEmail]) {
+                    return users[loggedInEmail];
+                }
+            }
+            return null;
+        }
+
+        function getUserFullName() {
+            const userData = getUserData();
+            if (userData) {
+                if (userData.firstName && userData.lastName) {
+                    return `${userData.firstName} ${userData.lastName}`;
+                }
+                if (userData.name) {
+                    return userData.name;
+                }
+            }
+            return sessionStorage.getItem('loggedUserName') || 'User';
+        }
+
+        function updateNavbarWithLogout() {
             const loggedIn = sessionStorage.getItem('cpu_sim_loggedIn') === 'true';
             const authSection = document.getElementById('authSection');
+            
             if (loggedIn) {
-                const userName = sessionStorage.getItem('loggedUserName') || 'User';
-                const displayName = userName.split(' ')[0];
-                authSection.innerHTML = `<span style="color: #6C8CFF;"><i class="fas fa-user-circle"></i> ${displayName}</span>`;
+                const fullName = getUserFullName();
+                const firstName = fullName.split(' ')[0];
+                const initial = firstName.charAt(0).toUpperCase();
+                authSection.innerHTML = `
+                    <div class="user-profile">
+                        <div class="user-avatar">${initial}</div>
+                        <div class="user-name">${fullName}</div>
+                        <button class="logout-btn" onclick="logoutUser()">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </button>
+                    </div>
+                `;
             } else {
                 authSection.innerHTML = `<a href="login.html" style="color: #CFE3FF; text-decoration: none;">Login</a>`;
             }
+        }
+
+        function logoutUser() {
+            sessionStorage.removeItem('cpu_sim_loggedIn');
+            sessionStorage.removeItem('loggedUserEmail');
+            sessionStorage.removeItem('loggedUserName');
+            sessionStorage.removeItem('tempLoginEmail');
+            sessionStorage.removeItem('tempUserData');
+            alert('✅ Logged out successfully!');
+            window.location.href = 'index.html';
         }
 
         function renderDynamicProcessList() {
@@ -529,12 +651,12 @@
             }
             container.innerHTML = '';
             dynamicProcesses.forEach((p, idx) => {
-                const color = processColors[(p.pid - 1) % processColors.length];
+                const gradient = getProcessGradient(`P${p.pid}`);
                 const div = document.createElement('div');
                 div.className = 'dynamic-process-item';
-                div.style.borderLeft = `3px solid ${color}`;
+                div.style.borderLeft = `3px solid ${gradient.split(',')[1] || '#5A7CFF'}`;
                 div.innerHTML = `
-                    <span><strong style="color: ${color};">P${p.pid}</strong> | AT:${p.arrival} | BT:${p.burst} | P:${p.priority}</span>
+                    <span><strong style="background: ${gradient}; -webkit-background-clip: text; background-clip: text; color: transparent; font-weight: 700;">P${p.pid}</strong> | AT:${p.arrival} | BT:${p.burst} | P:${p.priority}</span>
                     <button class="btn-danger" data-idx="${idx}"><i class="fas fa-trash"></i></button>
                 `;
                 container.appendChild(div);
@@ -575,7 +697,6 @@
             renderDynamicProcessList();
         });
 
-        // MLFQ Sliders
         document.getElementById('q1Slider').addEventListener('input', (e) => {
             document.getElementById('q1Value').innerText = e.target.value;
             mlfqConfig.queue1Quantum = parseInt(e.target.value);
@@ -590,13 +711,12 @@
         });
 
         document.getElementById('applyMLFQBtn').addEventListener('click', () => {
-            alert(`MLFQ Configuration Applied!\n\nQueue 1 Quantum: ${mlfqConfig.queue1Quantum}\nQueue 2 Quantum: ${mlfqConfig.queue2Quantum}\nQueue 3 Quantum: ${mlfqConfig.queue3Quantum}\n\nThese values will be used when you run MLFQ simulation.`);
+            alert(`MLFQ Configuration Applied!\n\nQueue 1 Quantum: ${mlfqConfig.queue1Quantum}\nQueue 2 Quantum: ${mlfqConfig.queue2Quantum}\nQueue 3 Quantum: ${mlfqConfig.queue3Quantum}`);
         });
 
         function showLoading() { document.getElementById('loadingOverlay').style.display = 'flex'; }
         function hideLoading() { document.getElementById('loadingOverlay').style.display = 'none'; }
 
-        // Properly aligned Gantt chart rendering for Advanced page
         function renderGanttChart(ganttData, maxTime, metrics) {
             const container = document.getElementById('ganttContainer');
             
@@ -608,7 +728,6 @@
             const unitWidth = 60;
             const chartWidth = maxTime * unitWidth;
             
-            // Timeline with perfect alignment
             let html = `<div style="min-width: ${chartWidth}px;">`;
             
             // Timeline numbers
@@ -623,15 +742,14 @@
             }
             html += `</div>`;
             
-            // Gantt blocks row
+            // Gantt blocks with aesthetic gradients and hover effects
             html += `<div style="position: relative; width: ${chartWidth}px; height: 55px; margin: 5px 0;">`;
             for (let block of ganttData) {
                 const leftPos = block.start * unitWidth;
                 const blockWidth = (block.end - block.start) * unitWidth;
-                const pidNum = parseInt(block.pid.replace('P', ''));
-                const colorIdx = (pidNum - 1) % processColors.length;
+                const gradient = getProcessGradient(block.pid);
                 html += `
-                    <div style="position: absolute; left: ${leftPos}px; width: ${blockWidth}px; height: 100%; background: linear-gradient(135deg, ${processColors[colorIdx]}, ${processColors[colorIdx]}cc); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; color: white; cursor: pointer; transition: all 0.2s;"
+                    <div class="gantt-block" style="position: absolute; left: ${leftPos}px; width: ${blockWidth}px; height: 100%; background: ${gradient}; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; color: white; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.2);"
                         title="${block.pid}: ${block.start} → ${block.end} (Duration: ${block.end - block.start})">
                         ${block.pid}
                     </div>
@@ -639,14 +757,12 @@
             }
             html += `</div>`;
             
-            // Labels below blocks
+            // Labels
             html += `<div style="position: relative; width: ${chartWidth}px; height: 25px; margin-top: 5px;">`;
             for (let block of ganttData) {
                 const centerPos = ((block.start + block.end) / 2) * unitWidth;
-                const pidNum = parseInt(block.pid.replace('P', ''));
-                const colorIdx = (pidNum - 1) % processColors.length;
                 html += `
-                    <div style="position: absolute; left: ${centerPos}px; transform: translateX(-50%); font-size: 0.7rem; font-weight: 600; color: ${processColors[colorIdx]};">
+                    <div style="position: absolute; left: ${centerPos}px; transform: translateX(-50%); font-size: 0.7rem; font-weight: 500; color: #A0C0FF;">
                         ${block.pid}
                     </div>
                 `;
@@ -656,12 +772,10 @@
             html += `</div>`;
             container.innerHTML = html;
             
-            // Update metrics if provided
             if (metrics) {
                 document.getElementById('avgWaiting').innerText = metrics.avg_waiting?.toFixed(2) || '—';
                 document.getElementById('avgTurnaround').innerText = metrics.avg_turnaround?.toFixed(2) || '—';
                 
-                // Calculate CPU Utilization and Throughput from Gantt data
                 const totalBurst = ganttData.reduce((sum, block) => sum + (block.end - block.start), 0);
                 const cpuUtil = (totalBurst / maxTime) * 100;
                 const throughput = ganttData.length / maxTime;
@@ -671,7 +785,6 @@
             }
         }
 
-        // Main MLFQ Simulation function
         async function runMLFQSimulation() {
             if (dynamicProcesses.length === 0) {
                 alert('Please add some processes first');
@@ -684,7 +797,6 @@
                 quantum: mlfqConfig.queue1Quantum
             };
             
-            console.log('Sending MLFQ request:', JSON.stringify(requestBody, null, 2));
             showLoading();
             
             try {
@@ -699,9 +811,6 @@
                 }
                 
                 const data = await response.json();
-                console.log('MLFQ Response received:', data);
-                console.log('Gantt blocks:', data.gantt);
-                console.log('Metrics:', data.metrics);
                 
                 if (data.gantt && data.gantt.length > 0) {
                     const maxTime = Math.max(...data.gantt.map(b => b.end), 1);
@@ -726,11 +835,10 @@
             }
         }
 
-        // Event Listeners
         document.getElementById('simulateMultiCoreBtn').addEventListener('click', runMLFQSimulation);
         
         renderDynamicProcessList();
-        updateNavbar();
+        updateNavbarWithLogout();
     </script>
 </body>
 </html>
