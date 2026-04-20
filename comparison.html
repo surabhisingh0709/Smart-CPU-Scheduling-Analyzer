@@ -65,6 +65,7 @@
             display: flex;
             gap: 2rem;
             align-items: center;
+            flex-wrap: wrap;
         }
         .nav-links a {
             color: #CFE3FF;
@@ -76,6 +77,47 @@
         .nav-links a:hover, .nav-links a.active {
             color: white;
             text-shadow: 0 0 6px #6C8CFF;
+        }
+        /* User profile section */
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            background: rgba(92, 124, 255, 0.15);
+            padding: 0.3rem 1rem;
+            border-radius: 40px;
+            border: 1px solid rgba(92, 124, 255, 0.3);
+        }
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #5A7CFF, #3B5BDB);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: white;
+        }
+        .user-name {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #CFE3FF;
+        }
+        .logout-btn {
+            background: rgba(255, 107, 107, 0.15);
+            border: 1px solid #FF6B6B;
+            padding: 0.25rem 0.7rem;
+            border-radius: 40px;
+            color: #FF6B6B;
+            cursor: pointer;
+            font-size: 0.7rem;
+            transition: 0.2s;
+        }
+        .logout-btn:hover {
+            background: rgba(255, 107, 107, 0.3);
+            transform: scale(0.95);
         }
 
         .comparison-container {
@@ -226,11 +268,11 @@
             <i class="fas fa-microchip"></i> SmartCPU
         </div>
         <div class="nav-links">
-            <a href="index.html">Home</a>
+            <a href="index2.html">Home</a>
             <a href="simulator.html">Simulator</a>
             <a href="comparison.html" class="active">Comparison</a>
             <a href="advanced.html">Advanced</a>
-            <a href="login.html" id="authLink">Login</a>
+            <span id="authSection"></span>
         </div>
     </nav>
 
@@ -244,10 +286,30 @@
                         <tr><th>PID</th><th>Arrival Time</th><th>Burst Time</th><th>Priority</th><th>Action</th></tr>
                     </thead>
                     <tbody id="processTableBody">
-                        <tr><td><input type="text" value="P1" class="pid-input"></td><td><input type="number" value="0" class="arrival-input"></td><td><input type="number" value="5" class="burst-input"></td><td><input type="number" value="2" class="priority-input"></td><td><button class="delete-row-btn"><i class="fas fa-trash"></i></button></td></tr>
-                        <tr><td><input type="text" value="P2" class="pid-input"></td><td><input type="number" value="1" class="arrival-input"></td><td><input type="number" value="3" class="burst-input"></td><td><input type="number" value="1" class="priority-input"></td><td><button class="delete-row-btn"><i class="fas fa-trash"></i></button></td></tr>
-                        <tr><td><input type="text" value="P3" class="pid-input"></td><td><input type="number" value="2" class="arrival-input"></td><td><input type="number" value="8" class="burst-input"></td><td><input type="number" value="3" class="priority-input"></td><td><button class="delete-row-btn"><i class="fas fa-trash"></i></button></td></tr>
-                        <tr><td><input type="text" value="P4" class="pid-input"></td><td><input type="number" value="3" class="arrival-input"></td><td><input type="number" value="6" class="burst-input"></td><td><input type="number" value="2" class="priority-input"></td><td><button class="delete-row-btn"><i class="fas fa-trash"></i></button></td></tr>
+                        <tr><td><input type="text" value="P1" class="pid-input"></td>
+                            <td><input type="number" value="0" class="arrival-input"></td>
+                            <td><input type="number" value="5" class="burst-input"></td>
+                            <td><input type="number" value="2" class="priority-input"></td>
+                            <td><button class="delete-row-btn"><i class="fas fa-trash"></i></button></td>
+                        </tr>
+                        <tr><td><input type="text" value="P2" class="pid-input"></td>
+                            <td><input type="number" value="1" class="arrival-input"></td>
+                            <td><input type="number" value="3" class="burst-input"></td>
+                            <td><input type="number" value="1" class="priority-input"></td>
+                            <td><button class="delete-row-btn"><i class="fas fa-trash"></i></button></td>
+                        </tr>
+                        <tr><td><input type="text" value="P3" class="pid-input"></td>
+                            <td><input type="number" value="2" class="arrival-input"></td>
+                            <td><input type="number" value="8" class="burst-input"></td>
+                            <td><input type="number" value="3" class="priority-input"></td>
+                            <td><button class="delete-row-btn"><i class="fas fa-trash"></i></button></td>
+                        </tr>
+                        <tr><td><input type="text" value="P4" class="pid-input"></td>
+                            <td><input type="number" value="3" class="arrival-input"></td>
+                            <td><input type="number" value="6" class="burst-input"></td>
+                            <td><input type="number" value="2" class="priority-input"></td>
+                            <td><button class="delete-row-btn"><i class="fas fa-trash"></i></button></td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -286,17 +348,61 @@
     <script>
         let waitingChart, turnaroundChart;
 
-        function updateNavbar() {
-            const loggedIn = sessionStorage.getItem('cpu_sim_loggedIn') === 'true';
-            const authLink = document.getElementById('authLink');
-            if (loggedIn) {
-                const userName = sessionStorage.getItem('loggedUserName') || 'User';
-                authLink.innerHTML = `<i class="fas fa-user-circle"></i> ${userName.split(' ')[0]}`;
-                authLink.href = "#";
-            } else {
-                authLink.innerHTML = "Login";
-                authLink.href = "login.html";
+        function getUserData() {
+            const usersDB = localStorage.getItem('cpu_sim_users_db');
+            if (usersDB) {
+                const users = JSON.parse(usersDB);
+                const loggedInEmail = sessionStorage.getItem('loggedUserEmail');
+                if (loggedInEmail && users[loggedInEmail]) {
+                    return users[loggedInEmail];
+                }
             }
+            return null;
+        }
+
+        function getUserFullName() {
+            const userData = getUserData();
+            if (userData) {
+                if (userData.firstName && userData.lastName) {
+                    return `${userData.firstName} ${userData.lastName}`;
+                }
+                if (userData.name) {
+                    return userData.name;
+                }
+            }
+            return sessionStorage.getItem('loggedUserName') || 'User';
+        }
+
+        function updateNavbarWithLogout() {
+            const loggedIn = sessionStorage.getItem('cpu_sim_loggedIn') === 'true';
+            const authSection = document.getElementById('authSection');
+            
+            if (loggedIn) {
+                const fullName = getUserFullName();
+                const firstName = fullName.split(' ')[0];
+                const initial = firstName.charAt(0).toUpperCase();
+                authSection.innerHTML = `
+                    <div class="user-profile">
+                        <div class="user-avatar">${initial}</div>
+                        <div class="user-name">${fullName}</div>
+                        <button class="logout-btn" onclick="logoutUser()">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </button>
+                    </div>
+                `;
+            } else {
+                authSection.innerHTML = `<a href="login.html" style="color: #CFE3FF; text-decoration: none;">Login</a>`;
+            }
+        }
+
+        function logoutUser() {
+            sessionStorage.removeItem('cpu_sim_loggedIn');
+            sessionStorage.removeItem('loggedUserEmail');
+            sessionStorage.removeItem('loggedUserName');
+            sessionStorage.removeItem('tempLoginEmail');
+            sessionStorage.removeItem('tempUserData');
+            alert('✅ Logged out successfully!');
+            window.location.href = 'index.html';
         }
 
         function getProcessesFromTable() {
@@ -453,104 +559,131 @@
         }
 
         async function compareAlgorithms() {
-    const processes = getProcessesFromTable();
+            const processes = getProcessesFromTable();
 
-    if (processes.length === 0) {
-        alert('Please add at least one process');
-        return;
-    }
+            if (processes.length === 0) {
+                alert('Please add at least one process');
+                return;
+            }
 
-    // 🔹 convert to backend format
-    const formattedProcesses = processes.map((p, index) => ({
-        pid: index + 1,
-        arrival: p.arrival,
-        burst: p.burst,
-        priority: p.priority
-    }));
+            // convert to backend format
+            const formattedProcesses = processes.map((p, index) => ({
+                pid: index + 1,
+                arrival: p.arrival,
+                burst: p.burst,
+                priority: p.priority
+            }));
 
-    const algorithms = ["FCFS", "SJF", "RR", "PRIORITY"];
-    const results = [];
+            const algorithms = ["FCFS", "SJF", "RR", "PRIORITY"];
+            const results = [];
 
-    for (let algo of algorithms) {
-        try {
-            const res = await fetch("http://127.0.0.1:5000/run", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
+            for (let algo of algorithms) {
+                try {
+                    const res = await fetch("http://127.0.0.1:5000/run", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            processes: formattedProcesses,
+                            algorithm: algo,
+                            quantum: 2
+                        })
+                    });
+
+                    const data = await res.json();
+
+                    if (!data.metrics) continue;
+
+                    results.push({
+                        name: algo,
+                        avgWaiting: data.metrics.avg_waiting,
+                        avgTurnaround: data.metrics.avg_turnaround,
+                        cpuUtil: 0,
+                        throughput: 0
+                    });
+
+                } catch (err) {
+                    console.error("Error:", err);
+                    alert("Backend connection failed");
+                    return;
+                }
+            }
+
+            // update table
+            const tableBody = document.getElementById('metricsTableBody');
+            tableBody.innerHTML = '';
+
+            results.forEach(r => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong>${r.name}</strong></td>
+                    <td>${r.avgWaiting.toFixed(2)}</td>
+                    <td>${r.avgTurnaround.toFixed(2)}</td>
+                    <td>-</td>
+                    <td>-</td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            // charts
+            const algoNames = results.map(r => r.name);
+            const waitingTimes = results.map(r => r.avgWaiting);
+            const turnaroundTimes = results.map(r => r.avgTurnaround);
+            
+            // Calculate percentages for pie chart
+            const totalTurnaround = turnaroundTimes.reduce((a, b) => a + b, 0);
+            const percentages = turnaroundTimes.map(t => ((t / totalTurnaround) * 100).toFixed(1));
+
+            if (waitingChart) waitingChart.destroy();
+            if (turnaroundChart) turnaroundChart.destroy();
+
+            const ctx1 = document.getElementById('waitingTimeChart').getContext('2d');
+            waitingChart = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: algoNames,
+                    datasets: [{
+                        label: 'Average Waiting Time',
+                        data: waitingTimes,
+                        backgroundColor: ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4'],
+                        borderRadius: 8
+                    }]
                 },
-                body: JSON.stringify({
-                    processes: formattedProcesses,
-                    algorithm: algo,
-                    quantum: 2
-                })
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { labels: { color: '#CFE3FF' } }
+                    },
+                    scales: {
+                        y: { title: { display: true, text: 'Time (units)', color: '#A7BBE0' }, ticks: { color: '#A7BBE0' } },
+                        x: { ticks: { color: '#CFE3FF' } }
+                    }
+                }
             });
 
-            const data = await res.json();
-
-            if (!data.metrics) continue;
-
-            results.push({
-                name: algo,
-                avgWaiting: data.metrics.avg_waiting,
-                avgTurnaround: data.metrics.avg_turnaround,
-                cpuUtil: 0,        // optional (not from backend)
-                throughput: 0      // optional
+            const ctx2 = document.getElementById('turnaroundTimeChart').getContext('2d');
+            turnaroundChart = new Chart(ctx2, {
+                type: 'pie',
+                data: {
+                    labels: algoNames.map((name, i) => `${name}: ${percentages[i]}%`),
+                    datasets: [{
+                        data: turnaroundTimes,
+                        backgroundColor: ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: '#CFE3FF' } },
+                        tooltip: { callbacks: { label: (ctx) => `${ctx.label}: ${ctx.raw.toFixed(2)} units` } }
+                    }
+                }
             });
-
-        } catch (err) {
-            console.error("Error:", err);
-            alert("Backend connection failed");
-            return;
         }
-    }
-
-    // 🔹 update table
-    const tableBody = document.getElementById('metricsTableBody');
-    tableBody.innerHTML = '';
-
-    results.forEach(r => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td><strong>${r.name}</strong></td>
-            <td>${r.avgWaiting.toFixed(2)}</td>
-            <td>${r.avgTurnaround.toFixed(2)}</td>
-            <td>-</td>
-            <td>-</td>
-        `;
-        tableBody.appendChild(row);
-    });
-
-    // 🔹 charts
-    const algoNames = results.map(r => r.name);
-    const waitingTimes = results.map(r => r.avgWaiting);
-    const turnaroundTimes = results.map(r => r.avgTurnaround);
-
-    if (waitingChart) waitingChart.destroy();
-    if (turnaroundChart) turnaroundChart.destroy();
-
-    const ctx1 = document.getElementById('waitingTimeChart').getContext('2d');
-    waitingChart = new Chart(ctx1, {
-        type: 'bar',
-        data: {
-            labels: algoNames,
-            datasets: [{
-                label: 'Average Waiting Time',
-                data: waitingTimes
-            }]
-        }
-    });
-
-    const ctx2 = document.getElementById('turnaroundTimeChart').getContext('2d');
-    turnaroundChart = new Chart(ctx2, {
-        type: 'pie',
-        data: {
-            labels: algoNames,
-            datasets: [{
-                data: turnaroundTimes
-            }]
-        }
-    });
-}
 
         // Add row functionality
         document.getElementById('addRowBtn').addEventListener('click', () => {
@@ -586,7 +719,7 @@
         document.getElementById('compareBtn').addEventListener('click', compareAlgorithms);
         
         attachDeleteEvents();
-        updateNavbar();
+        updateNavbarWithLogout();
         
         // Run initial comparison
         setTimeout(() => compareAlgorithms(), 100);
