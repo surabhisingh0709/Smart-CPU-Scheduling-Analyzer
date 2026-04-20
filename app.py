@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import subprocess
+import sys
 
 app = Flask(__name__)
 CORS(app)
@@ -24,6 +25,8 @@ def run_scheduler():
     if algorithm == "RR":
         input_data += str(quantum) + "\n"
 
+    print("Sending to C++:", input_data)  # Debug
+
     # 🔹 Run C++ program
     result = subprocess.run(
         ["./scheduler.exe"],
@@ -32,6 +35,9 @@ def run_scheduler():
         capture_output=True
     )
 
+    print("C++ stdout:", result.stdout)  # Debug
+    print("C++ stderr:", result.stderr)  # Debug
+
     lines = result.stdout.strip().split("\n")
 
     gantt = []
@@ -39,17 +45,25 @@ def run_scheduler():
 
     i = 0
 
-    # 🔥 SKIP FIRST LINE (algorithm name like SJF)
-    i += 1
-
-    # 🔹 READ GANTT DATA
+    # 🔹 READ GANTT DATA (C++ outputs: pid start end for each block)
     while i < len(lines) and lines[i] != "---":
+        if lines[i].strip() == "":
+            i += 1
+            continue
         parts = lines[i].split()
-        gantt.append({
-            "pid": f"P{parts[0]}",   # 👈 IMPORTANT (frontend expects P1, P2)
-            "start": int(parts[1]),
-            "end": int(parts[2])
-        })
+        if len(parts) >= 3:
+            # Check if it's a valid Gantt line (all numbers)
+            try:
+                pid = int(parts[0])
+                start = int(parts[1])
+                end = int(parts[2])
+                gantt.append({
+                    "pid": f"P{pid}",
+                    "start": start,
+                    "end": end
+                })
+            except ValueError:
+                pass  # Skip non-numeric lines (like algorithm name)
         i += 1
 
     # skip ---
@@ -57,11 +71,15 @@ def run_scheduler():
 
     # 🔹 READ METRICS
     if i < len(lines):
-        vals = lines[i].split()
-        metrics = {
-            "avg_waiting": float(vals[0]),
-            "avg_turnaround": float(vals[1])
-        }
+        try:
+            vals = lines[i].split()
+            if len(vals) >= 2:
+                metrics = {
+                    "avg_waiting": float(vals[0]),
+                    "avg_turnaround": float(vals[1])
+                }
+        except:
+            metrics = {"avg_waiting": 0, "avg_turnaround": 0}
 
     return jsonify({
         "gantt": gantt,

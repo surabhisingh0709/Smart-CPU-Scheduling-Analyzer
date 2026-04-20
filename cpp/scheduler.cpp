@@ -1,4 +1,8 @@
-#include <bits/stdc++.h>
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <queue>
+#include <climits>
 using namespace std;
 
 struct Process {
@@ -106,6 +110,9 @@ void roundRobin(vector<Process> &p, vector<GanttBlock> &gantt, int q) {
     queue<int> qu;
     vector<bool> added(n, false);
 
+    // Sort by arrival time initially
+    sort(p.begin(), p.end(), [](auto &a, auto &b) { return a.arrival < b.arrival; });
+
     qu.push(0);
     added[0] = true;
 
@@ -120,6 +127,7 @@ void roundRobin(vector<Process> &p, vector<GanttBlock> &gantt, int q) {
 
         gantt.push_back({p[i].pid, start, time});
 
+        // Add newly arrived processes
         for (int j = 0; j < n; j++) {
             if (!added[j] && p[j].arrival <= time) {
                 qu.push(j);
@@ -127,8 +135,9 @@ void roundRobin(vector<Process> &p, vector<GanttBlock> &gantt, int q) {
             }
         }
 
-        if (p[i].remaining > 0) qu.push(i);
-        else {
+        if (p[i].remaining > 0) {
+            qu.push(i);
+        } else {
             p[i].completion = time;
             p[i].turnaround = time - p[i].arrival;
             p[i].waiting = p[i].turnaround - p[i].burst;
@@ -173,9 +182,16 @@ void mlfq(vector<Process> &p, vector<GanttBlock> &gantt) {
     int n = p.size(), time = 0, completed = 0;
     queue<int> q1, q2, q3;
     vector<bool> added(n, false);
+    
+    // Store original burst times
+    vector<int> originalBurst(n);
+    for (int i = 0; i < n; i++) {
+        originalBurst[i] = p[i].burst;
+        p[i].remaining = p[i].burst;
+    }
 
     while (completed < n) {
-
+        // Add newly arrived processes to q1
         for (int i = 0; i < n; i++) {
             if (!added[i] && p[i].arrival <= time) {
                 q1.push(i);
@@ -191,8 +207,22 @@ void mlfq(vector<Process> &p, vector<GanttBlock> &gantt) {
             time += exec;
             p[i].remaining -= exec;
 
-            if (p[i].remaining > 0) q2.push(i);
-            else completed++;
+            // Add newly arrived processes during this execution
+            for (int j = 0; j < n; j++) {
+                if (!added[j] && p[j].arrival <= time) {
+                    q1.push(j);
+                    added[j] = true;
+                }
+            }
+
+            if (p[i].remaining > 0) {
+                q2.push(i);
+            } else {
+                p[i].completion = time;
+                p[i].turnaround = time - p[i].arrival;
+                p[i].waiting = p[i].turnaround - originalBurst[i];
+                completed++;
+            }
         }
         else if (!q2.empty()) {
             int i = q2.front(); q2.pop();
@@ -202,8 +232,22 @@ void mlfq(vector<Process> &p, vector<GanttBlock> &gantt) {
             time += exec;
             p[i].remaining -= exec;
 
-            if (p[i].remaining > 0) q3.push(i);
-            else completed++;
+            // Add newly arrived processes
+            for (int j = 0; j < n; j++) {
+                if (!added[j] && p[j].arrival <= time) {
+                    q1.push(j);
+                    added[j] = true;
+                }
+            }
+
+            if (p[i].remaining > 0) {
+                q3.push(i);
+            } else {
+                p[i].completion = time;
+                p[i].turnaround = time - p[i].arrival;
+                p[i].waiting = p[i].turnaround - originalBurst[i];
+                completed++;
+            }
         }
         else if (!q3.empty()) {
             int i = q3.front(); q3.pop();
@@ -211,15 +255,28 @@ void mlfq(vector<Process> &p, vector<GanttBlock> &gantt) {
             gantt.push_back({p[i].pid, time, time + p[i].remaining});
             time += p[i].remaining;
             p[i].remaining = 0;
+
+            // Add newly arrived processes
+            for (int j = 0; j < n; j++) {
+                if (!added[j] && p[j].arrival <= time) {
+                    q1.push(j);
+                    added[j] = true;
+                }
+            }
+
+            p[i].completion = time;
+            p[i].turnaround = time - p[i].arrival;
+            p[i].waiting = p[i].turnaround - originalBurst[i];
             completed++;
         }
-        else time++;
+        else {
+            time++;
+        }
     }
 }
 
 //////////////////// MAIN ////////////////////
 int main() {
-
     int n;
     cin >> n;
 
@@ -235,17 +292,28 @@ int main() {
     vector<GanttBlock> gantt;
     reset(p, gantt);
 
-    if (algo == "FCFS") fcfs(p, gantt);
-    else if (algo == "SJF") sjf(p, gantt);
-    else if (algo == "SRTF") srtf(p, gantt);
+    if (algo == "FCFS") {
+        fcfs(p, gantt);
+    }
+    else if (algo == "SJF") {
+        sjf(p, gantt);
+    }
+    else if (algo == "SRTF") {
+        srtf(p, gantt);
+    }
     else if (algo == "RR") {
-        int q; cin >> q;
+        int q;
+        cin >> q;
         roundRobin(p, gantt, q);
     }
-    else if (algo == "PRIORITY") priority_np(p, gantt);
-    else if (algo == "MLFQ") mlfq(p, gantt);
+    else if (algo == "PRIORITY") {
+        priority_np(p, gantt);
+    }
+    else if (algo == "MLFQ") {
+        mlfq(p, gantt);
+    }
 
-    // OUTPUT (clean for backend)
+    // OUTPUT for backend
     for (auto &g : gantt) {
         cout << g.pid << " " << g.start << " " << g.end << endl;
     }

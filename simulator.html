@@ -246,7 +246,6 @@
             color: #6C8CFF;
         }
         
-        /* Gantt wrapper - ONLY this container has horizontal scroll */
         .gantt-wrapper {
             background: #0A0F1A;
             border-radius: 1rem;
@@ -256,7 +255,6 @@
             overflow-y: visible;
         }
         
-        /* Hide scrollbar for cleaner look (optional - keeps functionality) */
         .gantt-wrapper::-webkit-scrollbar {
             height: 6px;
         }
@@ -267,56 +265,6 @@
         .gantt-wrapper::-webkit-scrollbar-thumb {
             background: #5A7CFF;
             border-radius: 10px;
-        }
-        
-        .gantt-chart-container {
-            min-width: 100%;
-        }
-        
-        .timeline-row {
-            display: flex;
-            margin-bottom: 8px;
-            border-bottom: 1px solid rgba(92, 124, 255, 0.2);
-            padding-bottom: 5px;
-        }
-        .timeline-number {
-            font-size: 0.7rem;
-            color: #8FA3D9;
-            text-align: center;
-            flex: 0 0 55px;
-        }
-        
-        .process-blocks-row {
-            display: flex;
-            margin: 12px 0;
-        }
-        .process-block {
-            background: linear-gradient(135deg, #5A7CFF, #3B5BDB);
-            border-radius: 6px;
-            padding: 8px 0;
-            text-align: center;
-            font-weight: 700;
-            font-size: 0.8rem;
-            color: white;
-            margin: 0 1px;
-            cursor: pointer;
-            transition: all 0.2s;
-            flex: 0 0 auto;
-        }
-        .process-block:hover {
-            transform: translateY(-2px);
-            filter: brightness(1.1);
-        }
-        
-        .process-label-row {
-            display: flex;
-            margin-top: 5px;
-        }
-        .process-label-item {
-            text-align: center;
-            font-size: 0.7rem;
-            font-weight: 600;
-            flex: 0 0 auto;
         }
         
         .placeholder {
@@ -352,6 +300,39 @@
             margin-top: 0.2rem;
         }
 
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+        .loading-spinner {
+            background: #0E1625;
+            padding: 2rem;
+            border-radius: 1rem;
+            text-align: center;
+            border: 1px solid #5A7CFF;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #2A3650;
+            border-top-color: #5A7CFF;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
         @media (max-width: 1000px) {
             .two-columns { grid-template-columns: 1fr; }
             .navbar { padding: 1rem; flex-wrap: wrap; }
@@ -385,6 +366,7 @@
                     <option value="SRTF">SRTF (Shortest Remaining Time First)</option>
                     <option value="RR">Round Robin</option>
                     <option value="PRIORITY">Priority (Non-Preemptive)</option>
+                    <option value="MLFQ">MLFQ (Multi-Level Feedback Queue)</option>
                 </select>
 
                 <div id="quantumGroup" style="display: none;">
@@ -419,7 +401,6 @@
                     <span class="algorithm-badge" id="currentAlgoBadge">FCFS</span>
                 </div>
                 
-                <!-- ONLY this div has horizontal scroll - NOT the whole page -->
                 <div class="gantt-wrapper" id="ganttWrapper">
                     <div id="ganttContainer">
                         <div class="placeholder"><i class="fas fa-chart-gantt"></i> Run simulation to see Gantt chart</div>
@@ -440,7 +421,16 @@
         </div>
     </div>
 
+    <div id="loadingOverlay" style="display: none;" class="loading-overlay">
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>Connecting to backend...</p>
+        </div>
+    </div>
+
     <script>
+        const API_URL = 'http://127.0.0.1:5000/run';
+
         const processColors = {
             'P1': '#FF6B6B', 'P2': '#4ECDC4', 'P3': '#45B7D1', 'P4': '#96CEB4',
             'P5': '#FFEAA7', 'P6': '#DDA0DD', 'P7': '#98D8C8', 'P8': '#F7B787'
@@ -455,7 +445,6 @@
             return fallbackColors[0];
         }
 
-        // Function to get user data from localStorage (same database as signup)
         function getUserData() {
             const usersDB = localStorage.getItem('cpu_sim_users_db');
             if (usersDB) {
@@ -468,7 +457,6 @@
             return null;
         }
 
-        // Get user's full name from signup data
         function getUserFullName() {
             const userData = getUserData();
             if (userData) {
@@ -512,24 +500,26 @@
             window.location.href = 'index.html';
         }
 
+        // Convert frontend processes to backend format
         let processes = [
-            { pid: "P1", arrival: 0, burst: 5, priority: 2 },
-            { pid: "P2", arrival: 1, burst: 3, priority: 1 },
-            { pid: "P3", arrival: 2, burst: 8, priority: 3 },
-            { pid: "P4", arrival: 3, burst: 6, priority: 2 }
+            { pid: 1, arrival: 0, burst: 5, priority: 2 },
+            { pid: 2, arrival: 1, burst: 3, priority: 1 },
+            { pid: 3, arrival: 2, burst: 8, priority: 3 },
+            { pid: 4, arrival: 3, burst: 6, priority: 2 }
         ];
 
         function renderProcessList() {
             const container = document.getElementById('processList');
             container.innerHTML = '';
             processes.forEach((p, index) => {
-                const color = getProcessColor(p.pid);
+                const pidStr = `P${p.pid}`;
+                const color = getProcessColor(pidStr);
                 const card = document.createElement('div');
                 card.className = 'process-card';
                 card.style.borderLeft = `3px solid ${color}`;
                 card.innerHTML = `
                     <div class="process-info">
-                        <span><strong style="color: ${color};">${p.pid}</strong></span>
+                        <span><strong style="color: ${color};">P${p.pid}</strong></span>
                         <span>AT:${p.arrival}</span>
                         <span>BT:${p.burst}</span>
                         <span>P:${p.priority}</span>
@@ -542,22 +532,27 @@
                 btn.addEventListener('click', (e) => {
                     const idx = parseInt(btn.dataset.index);
                     processes.splice(idx, 1);
+                    processes.forEach((p, i) => { p.pid = i + 1; });
                     renderProcessList();
                 });
             });
         }
 
         function addProcess() {
-            const pid = document.getElementById('pidInput').value.trim();
+            const pidInput = document.getElementById('pidInput').value.trim();
             const arrival = parseInt(document.getElementById('arrivalInput').value);
             const burst = parseInt(document.getElementById('burstInput').value);
             const priority = parseInt(document.getElementById('priorityInput').value) || 1;
-            if (!pid || isNaN(arrival) || isNaN(burst)) {
-                alert('Please fill PID, Arrival Time, and Burst Time');
+            
+            if (isNaN(arrival) || isNaN(burst)) {
+                alert('Please fill Arrival Time and Burst Time');
                 return;
             }
-            processes.push({ pid, arrival, burst, priority });
+            
+            const newPid = processes.length + 1;
+            processes.push({ pid: newPid, arrival, burst, priority });
             renderProcessList();
+            
             document.getElementById('pidInput').value = '';
             document.getElementById('arrivalInput').value = '';
             document.getElementById('burstInput').value = '';
@@ -565,162 +560,96 @@
         }
 
         function randomGenerate() {
-            const pids = ['P1', 'P2', 'P3', 'P4'];
             processes = [];
-            for (let i = 0; i < 4; i++) {
+            for (let i = 1; i <= 4; i++) {
                 processes.push({
-                    pid: pids[i],
-                    arrival: Math.floor(Math.random() * 4),
-                    burst: Math.floor(Math.random() * 6) + 3,
-                    priority: Math.floor(Math.random() * 4) + 1
+                    pid: i,
+                    arrival: Math.floor(Math.random() * 5),
+                    burst: Math.floor(Math.random() * 8) + 2,
+                    priority: Math.floor(Math.random() * 5) + 1
                 });
             }
             renderProcessList();
         }
 
-        function runFCFS(procs) {
-            const sorted = [...procs].sort((a, b) => a.arrival - b.arrival);
-            let currentTime = 0;
-            const gantt = [];
-            const results = [];
-            for (let p of sorted) {
-                const start = Math.max(currentTime, p.arrival);
-                const end = start + p.burst;
-                gantt.push({ pid: p.pid, start, end });
-                results.push({ ...p, completion: end, turnaround: end - p.arrival, waiting: (end - p.arrival) - p.burst });
-                currentTime = end;
-            }
-            return { gantt, results };
+        function showLoading() {
+            document.getElementById('loadingOverlay').style.display = 'flex';
         }
 
-        function runSJF(procs) {
-            let available = [...procs];
-            let currentTime = 0;
-            const gantt = [];
-            const results = [];
-            while (available.length > 0) {
-                const availableNow = available.filter(p => p.arrival <= currentTime);
-                if (availableNow.length === 0) {
-                    currentTime = Math.min(...available.map(p => p.arrival));
-                    continue;
-                }
-                availableNow.sort((a, b) => a.burst - b.burst);
-                const next = availableNow[0];
-                const index = available.findIndex(p => p.pid === next.pid);
-                available.splice(index, 1);
-                const start = currentTime;
-                const end = start + next.burst;
-                gantt.push({ pid: next.pid, start, end });
-                results.push({ ...next, completion: end, turnaround: end - next.arrival, waiting: (end - next.arrival) - next.burst });
-                currentTime = end;
-            }
-            return { gantt, results };
+        function hideLoading() {
+            document.getElementById('loadingOverlay').style.display = 'none';
         }
 
-        function runRR(procs, quantum) {
-            let queue = [...procs].sort((a, b) => a.arrival - b.arrival);
-            let currentTime = 0;
-            const gantt = [];
-            const remaining = new Map();
-            procs.forEach(p => remaining.set(p.pid, p.burst));
-            const arrivalMap = new Map();
-            procs.forEach(p => arrivalMap.set(p.pid, p.arrival));
-            const completion = new Map();
-            const waiting = new Map();
-            procs.forEach(p => waiting.set(p.pid, 0));
-            let idx = 0;
-            const readyQueue = [];
-            while (queue.length > 0 || readyQueue.length > 0) {
-                while (idx < queue.length && queue[idx].arrival <= currentTime) {
-                    readyQueue.push(queue[idx]);
-                    idx++;
-                }
-                if (readyQueue.length === 0) {
-                    currentTime = queue[idx].arrival;
-                    continue;
-                }
-                const current = readyQueue.shift();
-                const remainingTime = remaining.get(current.pid);
-                const execTime = Math.min(quantum, remainingTime);
-                const start = currentTime;
-                const end = start + execTime;
-                gantt.push({ pid: current.pid, start, end });
-                currentTime = end;
-                const newRemaining = remainingTime - execTime;
-                remaining.set(current.pid, newRemaining);
-                while (idx < queue.length && queue[idx].arrival <= currentTime) {
-                    readyQueue.push(queue[idx]);
-                    idx++;
-                }
-                if (newRemaining > 0) {
-                    readyQueue.push(current);
-                } else {
-                    completion.set(current.pid, currentTime);
-                    const turn = currentTime - arrivalMap.get(current.pid);
-                    const wait = turn - current.burst;
-                    waiting.set(current.pid, wait);
-                }
-            }
-            const results = procs.map(p => ({
-                ...p,
-                completion: completion.get(p.pid),
-                turnaround: completion.get(p.pid) - p.arrival,
-                waiting: waiting.get(p.pid)
-            }));
-            return { gantt, results };
-        }
-
-        function renderGanttChart(ganttData, maxTime, algorithm) {
+        // FIXED: Properly aligned Gantt chart rendering
+        function renderGanttChartFromAPI(ganttData, metrics, algorithm) {
             const container = document.getElementById('ganttContainer');
             
             if (!ganttData || ganttData.length === 0) {
-                container.innerHTML = '<div class="placeholder"><i class="fas fa-chart-gantt"></i> Run simulation to see Gantt chart</div>';
+                container.innerHTML = '<div class="placeholder"><i class="fas fa-chart-gantt"></i> No Gantt chart data received</div>';
                 return;
             }
             
-            const totalDuration = maxTime;
+            const maxTime = Math.max(...ganttData.map(b => b.end), 1);
             const unitWidth = 60;
-            const chartWidth = totalDuration * unitWidth;
+            const chartWidth = maxTime * unitWidth;
             
-            let timelineHTML = `<div class="timeline-row" style="width: ${chartWidth}px;">`;
-            for (let i = 0; i <= totalDuration; i++) {
-                timelineHTML += `<div class="timeline-number" style="width: ${unitWidth}px;">${i}</div>`;
+            // ✅ FIXED TIMELINE - Perfect alignment with blocks
+            let timelineHTML = `<div style="position: relative; width: ${chartWidth}px; height: 25px; margin-bottom: 10px;">`;
+            for (let i = 0; i <= maxTime; i++) {
+                timelineHTML += `
+                    <div style="position: absolute; left: ${i * unitWidth}px; transform: translateX(-50%); font-size: 0.7rem; color: #8FA3D9;">
+                        ${i}
+                    </div>
+                    <div style="position: absolute; left: ${i * unitWidth}px; top: 18px; width: 1px; height: 8px; background: rgba(92,124,255,0.3);"></div>
+                `;
             }
-            timelineHTML += '</div>';
+            timelineHTML += `</div>`;
             
-            let blocksHTML = `<div class="process-blocks-row" style="width: ${chartWidth}px;">`;
+            // ✅ BLOCKS - Positioned absolutely at exact start time
+            let blocksHTML = `<div style="position: relative; width: ${chartWidth}px; height: 55px; margin: 5px 0;">`;
             for (let block of ganttData) {
+                const leftPos = block.start * unitWidth;
                 const blockWidth = (block.end - block.start) * unitWidth;
                 const color = getProcessColor(block.pid);
                 blocksHTML += `
-                    <div class="process-block" style="width: ${blockWidth}px; background: linear-gradient(135deg, ${color}, ${color}cc);"
-                         title="${block.pid}: ${block.start} → ${block.end}">
+                    <div style="position: absolute; left: ${leftPos}px; width: ${blockWidth}px; height: 100%; background: linear-gradient(135deg, ${color}, ${color}cc); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; color: white; cursor: pointer; transition: all 0.2s;"
+                        title="${block.pid}: ${block.start} → ${block.end} (Duration: ${block.end - block.start})">
                         ${block.pid}
                     </div>
                 `;
             }
-            blocksHTML += '</div>';
+            blocksHTML += `</div>`;
             
-            let labelsHTML = `<div class="process-label-row" style="width: ${chartWidth}px;">`;
+            // ✅ LABELS - Centered below each block
+            let labelsHTML = `<div style="position: relative; width: ${chartWidth}px; height: 25px; margin-top: 5px;">`;
             for (let block of ganttData) {
-                const blockWidth = (block.end - block.start) * unitWidth;
+                const centerPos = ((block.start + block.end) / 2) * unitWidth;
                 const color = getProcessColor(block.pid);
-                labelsHTML += `<div class="process-label-item" style="width: ${blockWidth}px; color: ${color};">${block.pid}</div>`;
+                labelsHTML += `
+                    <div style="position: absolute; left: ${centerPos}px; transform: translateX(-50%); font-size: 0.7rem; font-weight: 600; color: ${color};">
+                        ${block.pid}
+                    </div>
+                `;
             }
-            labelsHTML += '</div>';
+            labelsHTML += `</div>`;
             
             container.innerHTML = `
-                <div class="gantt-chart-container">
-                    <div style="min-width: ${chartWidth}px;">
-                        ${timelineHTML}
-                        ${blocksHTML}
-                        ${labelsHTML}
-                    </div>
+                <div style="min-width: ${chartWidth}px;">
+                    ${timelineHTML}
+                    ${blocksHTML}
+                    ${labelsHTML}
                 </div>
             `;
+            
+            if (metrics) {
+                document.getElementById('avgWaitingTime').innerText = metrics.avg_waiting?.toFixed(2) || '—';
+                document.getElementById('avgTurnaroundTime').innerText = metrics.avg_turnaround?.toFixed(2) || '—';
+            }
+            
+            document.getElementById('currentAlgoBadge').innerText = algorithm;
         }
 
-        function runSimulation() {
+        async function runSimulation() {
             if (processes.length === 0) {
                 alert('Please add at least one process');
                 return;
@@ -728,29 +657,55 @@
             
             const algorithm = document.getElementById('algorithmSelect').value;
             const quantum = parseInt(document.getElementById('quantumInput').value) || 2;
-            let result;
             
-            switch(algorithm) {
-                case 'FCFS': result = runFCFS(processes); break;
-                case 'SJF': result = runSJF(processes); break;
-                case 'RR': result = runRR(processes, quantum); break;
-                default: result = runFCFS(processes);
+            const requestBody = {
+                processes: processes.map(p => ({
+                    pid: p.pid,
+                    arrival: p.arrival,
+                    burst: p.burst,
+                    priority: p.priority
+                })),
+                algorithm: algorithm,
+                quantum: quantum
+            };
+            
+            console.log('Sending to backend:', JSON.stringify(requestBody, null, 2));
+            showLoading();
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestBody)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('Backend response:', data);
+                
+                if (data.gantt && data.metrics) {
+                    renderGanttChartFromAPI(data.gantt, data.metrics, algorithm);
+                } else {
+                    throw new Error('Invalid response format');
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert(`Failed to connect to backend!\n\nMake sure your Flask server is running at ${API_URL}\n\nError: ${error.message}`);
+                
+                document.getElementById('ganttContainer').innerHTML = `
+                    <div class="placeholder">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <p>Backend not reachable at ${API_URL}</p>
+                        <p style="font-size: 0.7rem; margin-top: 0.5rem;">Please start your Flask server: python app.py</p>
+                    </div>
+                `;
+            } finally {
+                hideLoading();
             }
-            
-            const { gantt, results } = result;
-            const maxTime = Math.max(...gantt.map(b => b.end), 1);
-            
-            let totalWaiting = 0, totalTurnaround = 0;
-            results.forEach(r => {
-                totalWaiting += r.waiting;
-                totalTurnaround += r.turnaround;
-            });
-            
-            document.getElementById('avgWaitingTime').innerText = (totalWaiting / results.length).toFixed(2);
-            document.getElementById('avgTurnaroundTime').innerText = (totalTurnaround / results.length).toFixed(2);
-            document.getElementById('currentAlgoBadge').innerText = algorithm;
-            
-            renderGanttChart(gantt, maxTime, algorithm);
         }
 
         document.getElementById('addProcessBtn').addEventListener('click', addProcess);
@@ -758,7 +713,8 @@
         document.getElementById('runSimulationBtn').addEventListener('click', runSimulation);
         
         document.getElementById('algorithmSelect').addEventListener('change', (e) => {
-            document.getElementById('quantumGroup').style.display = e.target.value === 'RR' ? 'block' : 'none';
+            const quantumGroup = document.getElementById('quantumGroup');
+            quantumGroup.style.display = e.target.value === 'RR' ? 'block' : 'none';
         });
         
         renderProcessList();
